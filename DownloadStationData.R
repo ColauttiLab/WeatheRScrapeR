@@ -49,14 +49,14 @@ if(file.exists("WeatherRawData/NOAAStationData.csv")){
   SMax<-100 # Max number of stations to retain (NOTE: Final number will be smaller due to missing weather data, etc.)
   for(i in 1:nrow(PopData)){
     # Find all stations +/- Ndg degrees
-    CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg  & InData$V2 < PopData$Latitude[i]+Ndg &
-                            InData$V3 > PopData$Longitude[i]-Ndg  & InData$V3 < PopData$Longitude[i]+Ndg,1:4 ]
+    CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg & InData$V2 < PopData$Latitude[i]+Ndg &
+                            InData$V3 > PopData$Longitude[i]-Ndg & InData$V3 < PopData$Longitude[i]+Ndg & InData$V5 <= PopData$Year[i] & InData$V6 >= PopData$Year[i],1:4]
     names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
     # Use wider area if < 20 stations
     if(length(unique(CloseStations$StationID[CloseStations$Measure=="TMAX"]))<SMax){ 
       Ndg<-1
-      CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg  & InData$V2 < PopData$Latitude[i]+Ndg &
-                              InData$V3 > PopData$Longitude[i]-Ndg  & InData$V3 < PopData$Longitude[i]+Ndg, 1:4]
+      CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg & InData$V2 < PopData$Latitude[i]+Ndg &
+                              InData$V3 > PopData$Longitude[i]-Ndg& InData$V3 < PopData$Longitude[i]+Ndg & InData$V5 <= PopData$Year[i],1:4]
       names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
     }
     
