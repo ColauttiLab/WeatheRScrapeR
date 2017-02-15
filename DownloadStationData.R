@@ -112,11 +112,11 @@ for (year in 1973:1974){
     WthrData<-WthrData[WthrData$V1 %in% NOAAData$StationID & WthrData$V3 %in% c("TMAX","TMIN"),]
     # Reorganize data into 'wide' format
     ## For each station and each day:
-    # Calculate growing degrees above 5 deg C for each day: [(TMAX/10-TMIN/10)-5]/2 
+    # Calculate growing degrees above base temperature (5 degrees C) for each day: [(TMAX/10+TMIN/10)/2-BaseT]
     # NOTE: /10 because measured in 1/10 degrees
     # NOTE: Keep negative values to avoid bias in interpolation
     WthrData<-reshape(WthrData,v.names="V4",idvar=c("V1","V2"),timevar="V3",direction="wide")
-    WthrData$GD<-((WthrData$V4.TMAX/10+WthrData$V4.TMIN/10))/2-8 # Calculate growing degrees > 8 deg C
+    WthrData$GD<-(WthrData$V4.TMAX/10+WthrData$V4.TMIN/10)/2-8 # Calculate growing degrees > 8 deg C
     WthrData$GD[!is.na(WthrData$GD) & WthrData$GD<0]<-0
     WthrData<-WthrData[,c("V1","V2","GD")]
     names(WthrData)<-c("StationID","Date","GD")
