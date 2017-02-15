@@ -19,7 +19,7 @@ source("clstation.R")
 ##############################
 ## Load population data
 ##############################
-PopData<-read.csv("Test.csv")
+PopData<-read.csv("PopData.csv")
 
 ##############################
 ## 1. Find Weather Stations
@@ -31,7 +31,7 @@ if(!file.exists("WeatherRawData/ghcnd-inventory.txt")){
   download.file(url=paste0("http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt"),destfile="WeatherRawData/ghcnd-inventory.txt")
 }
 # Data format note:
-# No headers V1. Station ID; V2. Latitude; V3. Longitude; V4. Observation type; V5. Observation value; V6. Earliest date; V7. Latest Date
+# No headers V1. Station ID; V2. Latitude; V3. Longitude; V4. Observation type; V5. Earliest Year of Record; V6. Latest Year of Record
 # See http://www1.ncdc.noaa.gov/pub/data/ghcn/daily/readme.txt
 # A few key measurements in V4:
 # PRCP - precipitation (1/10mm); SNWD - snow depth (mm); TMAX - max temp (1/10 deg C); TMIN - min temp (1/10 deg C); WESD - water equivalent of snow on ground (1/10mm)
