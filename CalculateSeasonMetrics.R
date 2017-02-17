@@ -32,7 +32,7 @@ for ( i in 1:length(files)) {
 ##############################
 setwd("C:/Users/YIHANWU/Documents/2016 Queens/Leila")
 StnData<-read.csv("WeatherRawData/NOAAStationData.csv")
-PopData<-read.csv("PopData20161207.csv", header=T)
+PopData<-read.csv("PopData.csv", header=T)
 
 
 ##############################
