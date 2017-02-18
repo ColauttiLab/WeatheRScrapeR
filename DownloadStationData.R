@@ -1,11 +1,10 @@
 ############################################
 ## This script imports weather data 
 ############################################
-
+##Requires data file in csv with locations and year. 
 ##############################
 ## Load functions
 ##############################
-library(ggplot2)
 # Key paramaters:
 # datasetid - see: http://www.ncdc.noaa.gov/cdo-web/datasets
 dset<-"GHCND" # Daily climate observations
@@ -52,11 +51,11 @@ if(file.exists("WeatherRawData/NOAAStationData.csv")){
     CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg & InData$V2 < PopData$Latitude[i]+Ndg &
                             InData$V3 > PopData$Longitude[i]-Ndg & InData$V3 < PopData$Longitude[i]+Ndg & InData$V5 <= PopData$Year[i] & InData$V6 >= PopData$Year[i],1:4]
     names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
-    # Use wider area if < 20 stations
+    # Use wider area if < SMax stations
     if(length(unique(CloseStations$StationID[CloseStations$Measure=="TMAX"]))<SMax){ 
       Ndg<-1
       CloseStations<-InData[InData$V2 > PopData$Latitude[i]-Ndg & InData$V2 < PopData$Latitude[i]+Ndg &
-                              InData$V3 > PopData$Longitude[i]-Ndg& InData$V3 < PopData$Longitude[i]+Ndg & InData$V5 <= PopData$Year[i] & InData$V6 >= PopData$Year[i],1:4]
+                              InData$V3 > PopData$Longitude[i]-Ndg & InData$V3 < PopData$Longitude[i]+Ndg & InData$V5 <= PopData$Year[i] & InData$V6 >= PopData$Year[i],1:4]
       names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
     }
     
@@ -86,13 +85,13 @@ if(file.exists("WeatherRawData/NOAAStationData.csv")){
   NOAAData$Type<-"NOAA_GHCN"
   write.csv(NOAAData,"WeatherRawData/NOAAStationData.csv", row.names=FALSE) 
 }
-
+print("Station Search Complete")
 ##############################
 ## Download data and calculate Growing Degrees per day
 ##############################
 # Download weather data from NOAA (ftp server has all locations for each year)
 # Use FTP site to download data since we have >1,000 stations * years
-for (year in 1973:1974){
+for (year in 1866:2015){
   WthrData<-{} # Reset 'stations' data in each iteration
   FilePath<-paste0("WeatherRawData/NOAA_GHCN",year,".csv.gz")
   if(!file.exists(FilePath)){  # Skip if file already downloaded
@@ -109,17 +108,13 @@ for (year in 1973:1974){
     WthrData<-read.csv(FilePath,header=F)[,1:4]
     ## NOTE: Opening file takes ~ 5sec/MB; or about 15min per file ()
     # Keep only stations in NOAAData and only weather data of interest
-    WthrData<-WthrData[WthrData$V1 %in% NOAAData$StationID & WthrData$V3 %in% c("TMAX","TMIN"),]
+    WthrData<-WthrData[WthrData$V1 %in% NOAAData$StationID & WthrData$V3 %in% c("TMAX","TMIN","SNWD","PRCP","WESD"),]
+    # Add null data to avoid error message during reshape		
+    nodat<-data.frame(V1=NA,V2=NA,V3=c("TMAX","TMIN","SNWD","PRCP","WESD"),V4=NA)		
+    WthrData<-rbind(WthrData,nodat)
     # Reorganize data into 'wide' format
-    ## For each station and each day:
-    # Calculate growing degrees above base temperature (5 degrees C) for each day: [(TMAX/10+TMIN/10)/2-BaseT]
-    # NOTE: /10 because measured in 1/10 degrees
-    # NOTE: Keep negative values to avoid bias in interpolation
-    WthrData<-reshape(WthrData,v.names="V4",idvar=c("V1","V2"),timevar="V3",direction="wide")
-    #WthrData$GD<-(WthrData$V4.TMAX/10+WthrData$V4.TMIN/10)/2-8 # Calculate growing degrees > 8 deg C
-    #WthrData$GD[!is.na(WthrData$GD) & WthrData$GD<0]<-0
-    #WthrData<-WthrData[,c("V1","V2","GD")]
-    names(WthrData)<-c("StationID","Date","TMAX","TMIN")
+    WthrData<-WthrData[,c("V1","V2","V4.TMAX","V4.TMIN","V4.SNWD","V4.PRCP","V4.WESD")]
+    names(WthrData)<-c("StationID","Date","TMAX","TMIN","SNWD","PRCP","WESD")
     WthrData$Date<-as.Date(gsub("([0-9]{4})([0-9]{2})([0-9]{2})","\\1-\\2-\\3",WthrData$Date))
     WthrData$Day<-strptime(WthrData$Date,format="%Y-%m-%d")$yday
     # Save data frame
@@ -127,31 +122,4 @@ for (year in 1973:1974){
   }
 }
 
-##############################
-## Other stuff to explore weather station locations
-##############################
-# Count number of weather stations for each population
-NStations<-aggregate(NOAAData$Pop_Code,by=list(NOAAData$Pop_Code),length)
-qplot(x,data=NStations) # All have at least 400
-sum(is.na(NStations[,2])|NStations[,2]==0) # Count number of stations with no data
-# Separate for each measure
-NStations<-aggregate(NOAAData$Pop_Code,by=list(NOAAData$Pop_Code,NOAAData$Measure),length)
-qplot(x,data=NStations) + facet_wrap(~Group.2) # Min 100
-
-# Calculate avg distance for 10 closest stations for each populations 
-CloseStation<-clstation(data=NOAAData,N=10)
-qplot(Dist,data=CloseStation[CloseStation$Measure=="TMAX",])+scale_x_log10()
-length(unique(CloseStation$StationID)) # Total number of stations for which data is needed
-# Plot each measure separately
-qplot(Dist,data=CloseStation)+scale_x_log10()+facet_wrap(~Measure)
-
-# Find the closest stations for each population
-CloseStation<-clstation(data=NOAAData,N=1)
-qplot(Dist,data=CloseStation[CloseStation$Measure=="TMAX",])+scale_x_log10()
-length(unique(CloseStation$StationID))
-# Closest stations more than > 10km; 20km; 100km:
-aggregate(CloseStation$Pop_Code[CloseStation$Dist>10],by=list(CloseStation$Measure[CloseStation$Dist>10]),length)
-aggregate(CloseStation$Pop_Code[CloseStation$Dist>20],by=list(CloseStation$Measure[CloseStation$Dist>20]),length)
-aggregate(CloseStation$Pop_Code[CloseStation$Dist>100],by=list(CloseStation$Measure[CloseStation$Dist>100]),length)
-
-
+print("COMPLETED")
