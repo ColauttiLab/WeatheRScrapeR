@@ -1,8 +1,10 @@
 ############################################
 ## This script calculates growing degree days (GDD)
-## using weather data from 7a_Import_NOAAweather.R
+## using weather data from DownloadStationData.R
 ## then interpolates GDD for each population
+## and growing season metrics.
 ############################################
+
 
 ##############################
 ## Load functions
@@ -15,22 +17,25 @@ library(FSA)
 ######################################################
 ### Loop to calculate Growing Degree Days (do this first)
 ######################################################
-setwd("C:/Users/YIHANWU/Documents/2016 Queens/Leila/WeatherRawData/")
-files <- list.files("C:/Users/YIHANWU/Documents/2016 Queens/Leila/WeatherRawData/", pattern = "NOAAStnsClose*")
+setwd("C:/Users/YIHANWU/Documents/2016 Queens/WeatherScraper/WeatherScraper/WeatherRawData")
+files <- list.files("C:/Users/YIHANWU/Documents/2016 Queens/WeatherScraper/WeatherScraper/WeatherRawData", pattern = "NOAAStnsClose*")
 files
 for ( i in 1:length(files)) {
   data <- read.csv(files[i], header=T)
-  data <- data[,-9]
+  ##if this is not the first run and GDeg has already been calculated in the previous run. Ncol: depends on the ncol of DownloadStationData.R output csv files + 1 (new column added when GDeg was calculated previously).
+  if (ncol(data)==9) {
+  } else {
   data$GDeg <- (data$TMAX/10 + data$TMIN/10)/2 - 8
   data$GDeg <- ifelse(data$GDeg < 0, 0, data$GDeg)
   write.csv(data, files[i], row.names=F)
+  }
 }
 ############
 
 ##############################
 ## Load data
 ##############################
-setwd("C:/Users/YIHANWU/Documents/2016 Queens/Leila")
+setwd("C:/Users/YIHANWU/Documents/2016 Queens/WeatherScraper/WeatherScraper/")
 StnData<-read.csv("WeatherRawData/NOAAStationData.csv")
 PopData<-read.csv("PopData.csv", header=T)
 
@@ -43,9 +48,7 @@ PopData<-read.csv("PopData.csv", header=T)
 # Find nearby stations in NOAAData 
 # load station growing degrees for each day (GD)
 # NOTE: GD = (TMAX+TMIN)/20-8 and set GD=0 if GD<0
-# NOTE: /20 instead of 2 because measured in 1/10 degrees
 
-# Note: check for year in data file for NA and max/min before running loop for each year
 
 ##GDeg : growing degree day per day
 PopData$GD<-NA # Number of growing days above 5oC (Season Length)
@@ -66,7 +69,7 @@ Cntr<-0
 # For each year: 
 
 
-for(year in (2008:2014)){ 
+for(year in (1866:2015)){ 
   
   # Open file with GD data
   GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
@@ -191,6 +194,8 @@ for(year in (2008:2014)){
       PopData$skewGDeg[PopData$Pop_Code==Pop]<-predict(tpsskewGDeg,x=PopData[PopData$Pop_Code==Pop,c("Longitude","Latitude")],scale.type="unscaled")
       PopData$kurtGDeg[PopData$Pop_Code==Pop]<-predict(tpskurtGDeg,x=PopData[PopData$Pop_Code==Pop,c("Longitude","Latitude")],scale.type="unscaled")
       PopData$numStns[PopData$Pop_Code==Pop]<-nrow(GeoDat)
+      # SAVE output
+      write.csv(PopData,"PopData_wGDDtest.csv",row.names=F)
     }
     cat("***************\nIteration ",Cntr," of",length(unique(PopData$Pop_Code)),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGDD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDays: ",PopData$GDays[PopData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
@@ -198,5 +203,4 @@ for(year in (2008:2014)){
   GDData<-GDFilePath<-NA # Clean-up for next iteration of year
 }
 
-# SAVE output
-write.csv(PopData,"PopData_wGDDtest.csv",row.names=F)
+
