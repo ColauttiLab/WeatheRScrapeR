@@ -113,6 +113,7 @@ for (year in 1866:2015){
     nodat<-data.frame(V1=NA,V2=NA,V3=c("TMAX","TMIN","SNWD","PRCP","WESD"),V4=NA)		
     WthrData<-rbind(WthrData,nodat)
     # Reorganize data into 'wide' format
+    WthrData<-reshape(WthrData,v.names="V4",idvar=c("V1","V2"),timevar="V3",direction="wide")
     WthrData<-WthrData[,c("V1","V2","V4.TMAX","V4.TMIN","V4.SNWD","V4.PRCP","V4.WESD")]
     names(WthrData)<-c("StationID","Date","TMAX","TMIN","SNWD","PRCP","WESD")
     WthrData$Date<-as.Date(gsub("([0-9]{4})([0-9]{2})([0-9]{2})","\\1-\\2-\\3",WthrData$Date))
