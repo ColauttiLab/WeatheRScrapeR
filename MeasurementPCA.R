@@ -76,11 +76,20 @@ qplot(PhenolAllData$phPC)
 
 ## Separate data into east vs. west
 PhenolAllData$Region <-NULL
-PhenolAllData$Region[PhenolAllData$Longitude > -80]<-"EastCost"
+PhenolAllData$Region[PhenolAllData$Longitude > -80]<-"EastCoast"
 PhenolAllData$Region[PhenolAllData$Longitude <= -80 & PhenolAllData$Longitude > -95]<-"MidWest"
 PhenolAllData$Region[PhenolAllData$Longitude <= -95 & PhenolAllData$Longitude > -122]<-"West"
 PhenolAllData$Region[PhenolAllData$Longitude <= -122]<-"WestCoast"
 PhenolAllData$Region<-as.factor(PhenolAllData$Region)
+
+## Separate by date
+qplot(PhenolAllData$Year)
+PhenolAllData$Era <-NULL
+PhenolAllData$Era[PhenolAllData$Year < 1960]<-"Early"
+#PhenolAllData$Era[PhenolAllData$Year >= 1920 & PhenolAllData$Year < 1960]<-"Middle"
+PhenolAllData$Era[PhenolAllData$Year >= 1960]<-"Recent"
+PhenolAllData$Era<-as.factor(PhenolAllData$Era)
+
 
 #### NOTE: Most of the code below be moved to an R markdown file for publication
 
@@ -92,7 +101,7 @@ cor(PhenolAllData$GDD,PhenolAllData$GDDs)
 
 ## Weaker correlation across GD and GDD; 
 ## Use GDDs in model and GDD
-qplot(GD,GDDs,data=PhenolAllData)
+qplot(GDDs,GD,data=PhenolAllData)
 cor(PhenolAllData$GD,PhenolAllData$GDDs)
 qplot(GDD,GDs,data=PhenolAllData)
 cor(PhenolAllData$GDD,PhenolAllData$GDs)
@@ -136,6 +145,21 @@ summary(lm(Latitude~GD*Region, data=PhenolAllData))
 ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + facet_grid(Region~.) +
   geom_point(alpha=0.2)+geom_smooth(method="lm")
 summary(lm(fti~GD*Region, data=PhenolAllData))
+
+## Clines by era/year
+summary(lm(fti~GD*Region*Year, data=PhenolAllData))
+ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + facet_grid(Region~Era) +
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+
+mod1<-lm(fti~GD+Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+mod2<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+anova(mod1,mod2)
+summary(mod2)
+
+mod3<-lm(fti~Latitude+Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+mod4<-lm(fti~Latitude*Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+anova(mod3,mod4)
+summary(mod3)
 
 ## Bin into lat x long squares to calculate mean and S.E. for better cline estimate 
 ## i.e., generate geographic 'populations' from point samples
