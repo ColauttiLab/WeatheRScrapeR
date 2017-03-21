@@ -38,18 +38,19 @@ data$infl.cm<-data$flower.cm+data$bud.cm+data$fruit.cm+data$a.flower.cm
 ## flower has a value of 0
 ## bud has a value of -1
 ## (fruit*(+1) + flower*0 + bud*(-1))/(fruit+flower+bud)
-data$phind<-(data$fruit.cm-data$bud.cm)/data$infl.cm
+## aborted flowers treated as fruits (earliest)
+data$phind<-(data$fruit.cm+data$a.flower.cm-data$bud.cm)/data$infl.cm
 
 ## Alternatively, use PCA
 ## principal components analysis of inflorescence structure
-PhenolPC<-princomp(~log(bud.cm+1)+log(flower.cm+1)+log(infl.cm+1), data=data, cor=TRUE)
+PhenolPC<-princomp(~log(bud.cm+1)+log(flower.cm+1)+log(fruit.cm+a.flower.cm+1), data=data, cor=TRUE)
 summary(PhenolPC)
 loadings(PhenolPC) # See which PC captures phenology
 ## double-check that a PC-score exists for each individual in data
 nrow(data)
 nrow(PhenolPC$scores)
 ## replace AllData.csv with working dataset (i.e. excludes sites with missing climate data)
-write.csv(data, "CompleteData.csv", row.names=F)
+write.csv(data, "PCA.csv", row.names=F)
 
 ## Take PC scores and name
 PhenolPCScores<-data.frame(PhenolPC$scores)
@@ -65,29 +66,41 @@ PhenolAllData<-cbind(data,PhenolPCScores)
 
 ##### IMPORTANT!!! MUST CHECK EACH TIME DATA SET CHANGES
 ### Replace with PPC that best captures phenological stage
-phPC<-2
+phPC<-1
 PhenolAllData$phPC<-PhenolAllData[,grep(paste0("PPC",phPC),names(PhenolAllData))]
 
 ## if PPC is negative, then multiply by -1 so that larger values are later phenologies (i.e. more fruits than buds)
 loads<-loadings(PhenolPC)[,phPC]
-if(loadings(PhenolPC)[grep("infl",names(loads)),phPC]<0){
+if(loadings(PhenolPC)[grep("fruit",names(loads)),phPC]<0){
   PhenolAllData$phPC<-(PhenolAllData$phPC*-1)
 }
 
 ## Compare PCA to phenology index
 qplot(phind,phPC,data=PhenolAllData)
+cor(PhenolAllData$phind,PhenolAllData$phPC)
 qplot(PhenolAllData$phind)
 qplot(PhenolAllData$phPC)
 ## phPC is more normally distributed, but phind captures min/max phenol stage (-1 to +1)
 ## But if phPC (above) is calculated from non-(log)transformed measurements, then correlation is very tight
+## NOTE few points with phind == -1 and phPC ~0. This seems to be due to lack of flowers creating an upward bias in phPC
+## Therefore, phind seems to be the biologically more relevant parameter
 
 ## Separate data into east vs. west
 PhenolAllData$Region <-NULL
-PhenolAllData$Region[PhenolAllData$Longitude > -80]<-"EastCost"
-PhenolAllData$Region[PhenolAllData$Longitude <= -80 & PhenolAllData$Longitude > -95]<-"MidWest"
+PhenolAllData$Region[PhenolAllData$Longitude > -76]<-"EastCoast"
+PhenolAllData$Region[PhenolAllData$Longitude <= -76 & PhenolAllData$Longitude > -95]<-"MidWest"
 PhenolAllData$Region[PhenolAllData$Longitude <= -95 & PhenolAllData$Longitude > -122]<-"West"
 PhenolAllData$Region[PhenolAllData$Longitude <= -122]<-"WestCoast"
 PhenolAllData$Region<-as.factor(PhenolAllData$Region)
+
+## Separate by date
+qplot(PhenolAllData$Year)
+PhenolAllData$Era <-NULL
+PhenolAllData$Era[PhenolAllData$Year < 1960]<-"Early"
+#PhenolAllData$Era[PhenolAllData$Year >= 1920 & PhenolAllData$Year < 1960]<-"Middle"
+PhenolAllData$Era[PhenolAllData$Year >= 1960]<-"Recent"
+PhenolAllData$Era<-as.factor(PhenolAllData$Era)
+
 
 #### NOTE: Most of the code below be moved to an R markdown file for publication
 
@@ -99,7 +112,7 @@ cor(PhenolAllData$GDD,PhenolAllData$GDDs)
 
 ## Weaker correlation across GD and GDD; 
 ## Use GDDs in model and GDD
-qplot(GD,GDDs,data=PhenolAllData)
+qplot(GDDs,GD,data=PhenolAllData)
 cor(PhenolAllData$GD,PhenolAllData$GDDs)
 qplot(GDD,GDs,data=PhenolAllData)
 cor(PhenolAllData$GDD,PhenolAllData$GDs)
@@ -155,6 +168,23 @@ summary(lm(Latitude~GD*Region, data=PhenolAllData))
 ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + facet_grid(Region~.) +
   geom_point(alpha=0.2)+geom_smooth(method="lm")
 summary(lm(fti~GD*Region, data=PhenolAllData))
+
+## Clines by era/year
+summary(lm(fti~GD*Region*Year, data=PhenolAllData))
+ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + facet_grid(Region~Era) +
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+
+mod1<-lm(fti~GD+Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+mod2<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+anova(mod1,mod2)
+summary(mod2)
+
+mod3<-lm(fti~Latitude+Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+mod4<-lm(fti~Latitude*Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+anova(mod3,mod4)
+summary(mod3)
+
+
 
 ## Bin into lat x long squares to calculate mean and S.E. for better cline estimate 
 ## i.e., generate geographic 'populations' from point samples
