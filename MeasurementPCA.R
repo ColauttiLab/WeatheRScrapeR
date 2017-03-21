@@ -6,15 +6,17 @@
 
 ## Libraries
 library(ggplot2)
-
+library(dplyr)
 ### Measurement data
 data <-read.csv("CompleteData.csv", header=T)
 str(data)
 names(data)
 summary(data)##check if there are NAs for yday and Year or the measurements.
 
-## convert population code from factor to character
-data$Pop_Code<-as.character(data$Pop_Code)
+## convert data frame factors to character
+
+data %>% mutate_if(is.factor, as.character) -> data
+#data$Pop_Code<-as.character(data$Pop_Code)
 
 ## exclude 'populations' (i.e. sample locations) that are missing climate data
 data<-subset(data,!(is.na(data["numStns"])))
@@ -31,6 +33,11 @@ data$a.flower.cm<-data$actual/data$standard*data$aborted.inf.length
 data$infl.cm<-data$flower.cm+data$bud.cm+data$fruit.cm+data$a.flower.cm
 
 # Calculate a phenology index based on proportion of buds, flowers and fruits:
+
+## fruit has a value of +1
+## flower has a value of 0
+## bud has a value of -1
+## (fruit*(+1) + flower*0 + bud*(-1))/(fruit+flower+bud)
 data$phind<-(data$fruit.cm-data$bud.cm)/data$infl.cm
 
 ## Alternatively, use PCA
@@ -116,14 +123,26 @@ summary(lm(phind~GD,data=PhenolAllData))
 summary(lm(phind~GDs,data=PhenolAllData)) 
 summary(lm(phind~GDs*GD,data=PhenolAllData)) 
 
+##Yihan: 
+##GD is significant
+##GDs is significant
+##GDs and GDs:GD is significant, GD becomes non-significant
+
+
+
+
 ## Similar result for growing degree days
 summary(lm(phPC~GDD,data=PhenolAllData)) # Total growing degree days (GDD) not a good predictor
 summary(lm(phPC~GDDs,data=PhenolAllData)) # GDD until sampling (GDDs) is a good predictor, as expected
 summary(lm(phPC~GDDs*GDD,data=PhenolAllData)) # GDD becomes significant after controlling for GDDs
 
+##Yihan: phPC~GDDs*GDD, GDD is not significant
+
 summary(lm(phind~GDD,data=PhenolAllData)) # Total growing degree days (GDD) not a good predictor
 summary(lm(phind~GDDs,data=PhenolAllData)) # GDD until sampling (GDDs) is a good predictor, as expected
 summary(lm(phind~GDDs*GDD,data=PhenolAllData)) # GDD becomes significant after controlling for GDDs
+
+
 
 ## Adjust phenology for local climate and sampling date
 ## NOTE: GDs is the number of days from start of growing season to collection date
@@ -183,6 +202,8 @@ for (i in 1:nrow(bindat)){
                                         PhenolAllData$Latitude >= bindat$Lat[i]-biny & PhenolAllData$Latitude < bindat$Lat[i]+biny],na.rm=T)
 }
 qplot(GD,fti,data=bindat,alpha=I(0.2))+geom_smooth(method="lm")
+##Yihan: include warning message about missing values, some bins do not have any specimens in them
+
 bindat$Region <-NULL
 bindat$Region[bindat$Long > -80]<-"EastCost"
 bindat$Region[bindat$Long <= -80 & bindat$Long > -95]<-"MidWest"
