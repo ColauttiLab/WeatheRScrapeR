@@ -15,9 +15,6 @@ source("clstation.R")
 
 ##Montague's data were collected during 2004.  See paper at https://doi.org/10.1111/j.1420-9101.2007.01456.x
 
-##import Montague et al. greenhouse data
-Mont.GH<-read.csv("MontagueData_Cleaned.csv")
-Mont.field$Longitude<- Mont.field$Longitude*-1
 ##import Montague et al. field data
 Mont.field<-read.csv("FieldPhenology3.csv")
 Mont.field$Longitude<- Mont.field$Longitude*-1
@@ -75,55 +72,9 @@ if(file.exists("WeatherRawData/NOAAStnsValidField.csv")){
   write.csv(NOAAData,"WeatherRawData/NOAAStnsValidField.csv", row.names=FALSE) 
 }
 
-# Skip import data step if file already exists
-if(file.exists("WeatherRawData/NOAAStnsValidGH.csv")){  
-  NOAAData<-read.csv("WeatherRawData/NOAAStnsValidGH.csv")
-} else {
-  NOAAData<-{}
-  Ndg<-0.5 # Range (+/- degrees lat/log) to search for weather stations
-  SMax<-100 # Max number of stations to retain (NOTE: Final number will be smaller due to missing weather data, etc.)
-  for(i in 1:nrow(Mont.GH)){
-    # Find all stations +/- Ndg degrees and have records in year of collection
-    CloseStations<-InData[InData$V2 > Mont.GH$Latitude[i]-Ndg & InData$V2 < Mont.GH$Latitude[i]+Ndg &
-                            InData$V3 > Mont.GH$Longitude[i]-Ndg & InData$V3 < Mont.GH$Longitude[i]+Ndg & InData$V5 <= CYear & InData$V6 >= CYear,1:4]
-    names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
-    # Use wider area if < SMax stations
-    if(length(unique(CloseStations$StationID[CloseStations$Measure=="TMAX"]))<SMax){ 
-      Ndg<-1
-      CloseStations<-InData[InData$V2 > Mont.GH$Latitude[i]-Ndg & InData$V2 < Mont.GH$Latitude[i]+Ndg &
-                              InData$V3 > Mont.GH$Longitude[i]-Ndg & InData$V3 < Mont.GH$Longitude[i]+Ndg & InData$V5 <= CYear & InData$V6 >= CYear,1:4]
-      names(CloseStations)<-c("StationID","Latitude","Longitude","Measure")
-    }
-    
-    # Add pop info and calculate distances
-    if(nrow(CloseStations)>0){ # if at least one result is returned..
-      # Calculate distance from population to each station
-      CloseStations<-cbind(CloseStations,Population=Mont.GH$Population[i])
-      CloseStations$Dist<-NA
-      for(j in 1:nrow(CloseStations)){ # Cycle through each station
-        CloseStations$Dist[j]<-geodist(c(CloseStations$Latitude[j],CloseStations$Longitude[j],Mont.GH$Latitude[i],Mont.GH$Longitude[i]))   
-      }
-    }
-    # Find up to SMax closest stations for EACH measure of interest
-    for (Msr in MsrInt) { # Note - need to use same stations for tmax & tmin so don't do separately
-      KeepSt<-subset(CloseStations,Measure==Msr)
-      # If >SMax results, keep closest SMax 
-      if(nrow(KeepSt)>SMax){
-        KeepSt<-KeepSt[order(KeepSt$Dist),][1:SMax,]
-      }
-      # Add to main Stations list
-      NOAAData<-rbind(NOAAData,KeepSt)
-    }      
-  }
-  # Eliminate unused factor levels
-  ## Rename some columns for later merging
-  NOAAData$Measure<-factor(NOAAData$Measure)
-  NOAAData$Type<-"NOAA_GHCN"
-  write.csv(NOAAData,"WeatherRawData/NOAAStnsValidGH.csv", row.names=FALSE) 
-}
-
 
 print("Station Search Complete")
+
 
 
 
