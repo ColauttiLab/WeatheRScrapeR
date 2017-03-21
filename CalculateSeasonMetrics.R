@@ -155,8 +155,8 @@ for(year in (1866:2015)){
       test <- test[c(begin:end),] ##subset data to only growing season
       meanGDeg <- mean(test$GDeg) ##mean of growing degrees per day
       varGDeg <- sum((test$GDeg - meanGDeg)^2)/GD ## var of growing degrees per day for growing season, no adjustion for sample size
-      skewGDeg <- (sum((test$GDeg - meanGDeg)^3))/GD /(varGDeg)^(3/2) ##skewness, Fisher-Pearson (not adjusted for sample size)
-      kurtGDeg <- (sum((test$GDeg - meanGDeg)^4))/GD /(varGDeg)^(4/2) -3 ##excess kurtosis for univariate data, 
+      skewGDeg <- ((sum((test$GDeg - meanGDeg)^3))/GD) /(varGDeg)^(3/2) ##skewness, Fisher-Pearson (not adjusted for sample size)
+      kurtGDeg <- ((sum((test$GDeg - meanGDeg)^4))/GD) /(varGDeg)^(4/2) -3 ##excess kurtosis for univariate data, 
       
       
       
