@@ -179,8 +179,8 @@ mod2<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
 anova(mod1,mod2)
 summary(mod2)
 
-mod3<-lm(fti~Latitude+Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
-mod4<-lm(fti~Latitude*Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+mod3<-lm(fti~GD+Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+mod4<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
 anova(mod3,mod4)
 summary(mod3)
 
