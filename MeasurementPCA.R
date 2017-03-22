@@ -184,6 +184,20 @@ mod4<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
 anova(mod3,mod4)
 summary(mod3)
 
+## Why is cline evolving in East Coast but not Midwest
+## Overall advanced phenology in Midwest but not East Coast
+## What about GD and GDD vs. time?
+mod5<-lm(GD~Era*Latitude, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+summary(mod5)
+
+mod6<-lm(GDD~Era*Latitude, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
+summary(mod6)
+
+mod5<-lm(GD~Era*Latitude, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+summary(mod5)
+
+mod6<-lm(GDD~Era*Latitude, data=PhenolAllData[PhenolAllData$Region=="MidWest",])
+summary(mod6)
 
 
 ## Bin into lat x long squares to calculate mean and S.E. for better cline estimate 

@@ -7,21 +7,21 @@ PopData<-read.csv("CompleteData.csv", header=T, stringsAsFactors=FALSE)
 PopData<-subset(PopData, Year >=1960)
 
 GHData<-read.csv("MontagueData_Cleaned.csv", header=T, stringsAsFactors = F)
-GHData<-GHData[-1,]
+GHData<-GHData[-1,] # Remove dummy variable from 1st row
 GHData$Longitude<-GHData$Longitude*-1
 ##Create list of populations and the locations
 ##pull out unique populations and their coordinates
 ghpop <- data.frame(unique(GHData$Population), as.numeric(unique(GHData$Latitude)), as.numeric(unique(GHData$Longitude)))
 names(ghpop)<- c("Population", "Latitude", "Longitude")
-ghpop<-ghpop[-c(15,23),]
+ghpop<-ghpop[-c(15,23),] # Remove populations without enough herbarium records
 
 binx<-1 ## long bin size in degrees
 biny<-1## lat bin size in degrees
 
 ghpoplist<-{}
 ClosePop<-{}
-SMin <-5
-SMax <-15
+SMin <-5 # Limit to at least 5 herbarium records
+SMax <-100 # Optional limit on # herbarium records
 for (i in 1:nrow(ghpop)){
   ##find all samples within range of binx and bin y
   ClosePop<- PopData[PopData$Longitude >= ghpop$Longitude[i]-binx & PopData$Longitude <= ghpop$Longitude[i]+binx & PopData$Latitude >= ghpop$Latitude[i]-biny & PopData$Latitude <= ghpop$Latitude[i]+binx,]
