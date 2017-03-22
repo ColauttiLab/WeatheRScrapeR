@@ -18,7 +18,10 @@ source("clstation.R")
 ##############################
 ## Load population data
 ##############################
+library(lubridate)
 PopData<-read.csv("PopData.csv")
+PopData$yday <-yday(PopData$Date)
+PopData$Year <-year(PopData$Date)
 
 ##############################
 ## 1. Find Weather Stations
