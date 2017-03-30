@@ -3,8 +3,8 @@ library(dplyr)
 library(ggplot2)
 library(lme4)
 ##Data import and setup
-PopData<-read.csv("CompleteData.csv", header=T, stringsAsFactors=FALSE)
-PopData<-subset(PopData, Year >=1960)
+PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
+PhenolAllData<-subset(PhenolAllData, Year >=1960)
 
 GHData<-read.csv("MontagueData_Cleaned.csv", header=T, stringsAsFactors = F)
 GHData<-GHData[-1,] # Remove dummy variable from 1st row
@@ -13,11 +13,23 @@ GHData$Longitude<-GHData$Longitude*-1
 ##pull out unique populations and their coordinates
 ghpop <- data.frame(unique(GHData$Population), as.numeric(unique(GHData$Latitude)), as.numeric(unique(GHData$Longitude)))
 names(ghpop)<- c("Population", "Latitude", "Longitude")
-ghpop<-ghpop[-c(15,23),] # Remove populations without enough herbarium records
+###ghpop<-ghpop[-c(15,23),] # Remove populations without enough herbarium records
 
-binx<-1 ## long bin size in degrees
-biny<-1## lat bin size in degrees
+write.csv(ghpop, "MontaguePop.csv", row.names = FALSE)
 
+##set bounds to get subset for validation in greenhouse population range
+##north and west bounds
+ValidHerb<- PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
+ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
+
+ggplot(ValidHerb, aes(x=GD, y=fti))+
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+summary(lm(fti~Latitude*Region, data=ValidHerb))
+
+
+
+
+###scrap
 ghpoplist<-{}
 ClosePop<-{}
 SMin <-5 # Limit to at least 5 herbarium records
