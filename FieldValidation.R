@@ -4,13 +4,26 @@ library(reshape2)
 library(lme4)
 source("geodist.R")
 
-#Field Validation
-PopData<-read.csv("CompleteData.csv", header=T, stringsAsFactors = FALSE)
+##Data Import
+PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
+PhenolAllData<-subset(PhenolAllData, Year >=1960)
 FieldData<-read.csv("FieldPhenology.csv", header=T, stringsAsFactors = FALSE)
-FieldData<-FieldData[-c(13,20),]
 
-PopData<-subset(PopData, Year >=1960)
+##Data Setup
+names<-names(FieldData)
+names[1]<-"Pop_Code"
+names[10]<-"yday"
+names(FieldData)<-names
+FieldData$Year<-2004
+###subset to range around field populations
+ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
+ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 
+
+
+##
+
+###scrap
 #Binning into populations around the field populations
 
 binx<-1 ## long bin size in degrees
