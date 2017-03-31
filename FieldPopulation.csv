@@ -1,4 +1,4 @@
-"Pop_Code","Latitude","Longitude","Elevation","cum.daylight.hours","ann.mean.temp","season.length","GDD","Julien.date.of.first.flower","yday","percentage.damaged.by.herbivory","Water.depth","X..sun","X..days.from..8C.to.first.flowering","weighted.average...days.after.growing.season.to.flowering","proportion.through.the.growing.season.of.flowering.start","Year"
+"Pop_Code","Latitude","Longitude","Elevation","cum.daylight.hours","ann.mean.temp","season.length","calculatedGDD","Julien.date.of.first.flower","yday","percentage.damaged.by.herbivory","Water.depth","X..sun","X..days.from..8C.to.first.flowering","weighted.average...days.after.growing.season.to.flowering","proportion.through.the.growing.season.of.flowering.start","Year"
 "MDDB",38.7529722,-75.9901111,-19,3343.12259,14.5,256,2774.6,".",193,0,"8.33333333","83.3333333",".",118.46788,".",2004
 "NJHP",41.3130278,-74.678,390,2553.61516,8,185,1500.3,".",213,26.7,"1.60714286","82.1428571",".",102.377323,".",2004
 "NJPT",40.3403611,-74.6498611,-27,2954.31147,11.5,220,2109.8,".",207,5.5,"0.29411765","64.7058824",".",113.110606,".",2004
