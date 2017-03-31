@@ -8,7 +8,7 @@
 library(ggplot2)
 library(dplyr)
 ### Measurement data
-data <-read.csv("CompleteData.csv", header=T)
+data <-read.csv("PopData_wGDD.csv", header=T)
 str(data)
 names(data)
 summary(data)##check if there are NAs for yday and Year or the measurements.
@@ -153,6 +153,9 @@ summary(lm(phind~GDDs*GDD,data=PhenolAllData)) # GDD becomes significant after c
 ## GDDs is the number of growing-degrees from start of season to collection date
 qplot(GDDs,phind,data=PhenolAllData)
 PhenolAllData$fti <- (PhenolAllData$phind) + (PhenolAllData$GDDs-mean(PhenolAllData$GDDs,na.rm=TRUE))/sd(PhenolAllData$GDDs,na.rm=TRUE)
+
+
+write.csv(PhenolAllData, "PhenolAllData.csv", row.names = FALSE)
 
 ## Look at clines by region
 ggplot(PhenolAllData, aes(x=Latitude, y=fti, color=Region)) + facet_grid(Region~.) +
