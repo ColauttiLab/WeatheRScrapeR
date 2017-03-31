@@ -18,12 +18,41 @@ ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 
 ###Create list of populations and the locations
 ###pull out unique populations and their coordinates
-ghpop <- data.frame(unique(GHData$Population), as.numeric(unique(GHData$Latitude)), as.numeric(unique(GHData$Longitude)))
+ghpop <- data.frame(unique(GHData$Pop_Code), as.numeric(unique(GHData$Latitude)), as.numeric(unique(GHData$Longitude)))
 names(ghpop)<- c("Pop_Code", "Latitude", "Longitude")
 write.csv(ghpop, "MontaguePop.csv", row.names = FALSE)
 
-##Done on the server: make list of stations associated with each population, and get station data.
 
+
+##Shortcut: 
+
+##merge GD calculated in GreenhouseData to GHData list
+
+GreenhouseData<-read.csv("GreenhouseData_wGDD2003.csv", header=T)
+
+names(GreenhouseData)
+
+GreenhouseData<-GreenhouseData[,c(1,17:27)]
+
+AllData<-inner_join(GHData, GreenhouseData)
+
+
+test<-aggregate(AllData, by=list(AllData$Pop_Code), FUN=mean)
+
+ggplot(AllData, aes(x=GD, y=yday))+
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+summary(lm(fti~Latitude*Region, data=ValidHerb))
+
+
+
+
+
+
+
+
+
+##Done on the server: make list of stations associated with each population, and get station data.
+##Below is what is needed to create GreenhouseData_wGDD2003.csv
 GreenhouseData<- aggregate(GHData, by=list(GHData$Pop_Code), FUN=mean)
 StnData<-read.csv("WeatherRawData/NOAAMontagueStation.csv", header=T)
 ##Data Setup
@@ -170,24 +199,6 @@ for(year in (2003:2003)){
 ##need to fill in two populations, ONEC, and ONTI, use CA006072225 for ONEC , use CA006078285 for ONTI
 
 
-
-
-##merge GD calculated in GreenhouseData to GHData list
-
-GreenhouseData<-read.csv("GreenhouseData_wGDD2003.csv", header=T)
-
-names(GreenhouseData)
-
-GreenhouseData<-GreenhouseData[,c(1,17:27)]
-
-AllData<-inner_join(GHData, GreenhouseData)
-
-
-test<-aggregate(AllData, by=list(AllData$Pop_Code), FUN=mean)
-
-ggplot(AllData, aes(x=GD, y=yday))+
-  geom_point(alpha=0.2)+geom_smooth(method="lm")
-summary(lm(fti~Latitude*Region, data=ValidHerb))
 
 
 
