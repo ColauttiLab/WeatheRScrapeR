@@ -33,8 +33,6 @@ ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitud
 ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 
 
-
-
 Cntr<-0
 for(year in (2003:2005)){ 
   
