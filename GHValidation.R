@@ -36,20 +36,39 @@ GreenhouseData<-GreenhouseData[,c(1,17:27)]
 
 AllData<-inner_join(GHData, GreenhouseData)
 
-
+##make aggregate data frame averaging all individuals
 test<-aggregate(AllData, by=list(AllData$Pop_Code), FUN=mean)
+###normalizing flowering time 
+test$find<-(test$yday-mean(test$yday, na.rm=TRUE))/sd(test$yday, na.rm=TRUE)
+test$fti <- (test$find) + (test$GDDs-mean(test$GDDs,na.rm=TRUE))/sd(test$GDDs,na.rm=TRUE)
 
-ggplot(AllData, aes(x=GD, y=yday))+
+
+ggplot(test, aes(x=GD, y=fti))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
-summary(lm(fti~Latitude*Region, data=ValidHerb))
+
+summary(lm(fti~GD, data=test))
+
+
+ggplot(ValidHerb, aes(x=GD, y=fti))+
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+summary(lm(fti~GD, data=ValidHerb))
 
 
 
 
+##Assume fti for herbarium and greenhouse are similar measures
+dat1<-ValidHerb[,c(1,10:22, 35)]
+dat1$data<-"Herbarium"
+###rearrange test so column order is the same as for ValidHerb
+dat2<-test[,c(1,7:8,18, 17, 19:27, 29)]
+names(dat2)[1]<- "Pop_Code"
+dat2$data<-"Greenhouse"
 
+dat<-rbind(dat1,dat2)
 
-
-
+ggplot(dat, aes(x=GD, y=fti, color=data))+
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
+summary(lm(fti~GDD*data, data=dat))
 
 ##Done on the server: make list of stations associated with each population, and get station data.
 ##Below is what is needed to create GreenhouseData_wGDD2003.csv
