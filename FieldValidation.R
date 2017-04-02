@@ -9,11 +9,8 @@ library(FSA)
 source("geodist.R")
 
 ##Data Import
-PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
-PhenolAllData<-subset(PhenolAllData, Year >=1960)
+
 FieldData<-read.csv("FieldPhenology.csv", header=T, stringsAsFactors = FALSE)
-
-
 StnData<-read.csv("WeatherRawData/NOAAMontagueStation.csv", header=T)
 
 
@@ -28,9 +25,6 @@ FieldData$yday<-round(FieldData$yday) ##rounded in order to make GD and GDD calc
 
 
 write.csv(FieldData, "FieldPopulation.csv", row.names=FALSE)
-###subset to range around field populations
-ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
-ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 
 
 Cntr<-0
