@@ -2,9 +2,14 @@ source("geodist.r")
 library(dplyr)
 library(ggplot2)
 library(lme4)
+library(tibble)
+library(fields) # Used for spatial interpolation of GDD for each population
+library(zoo) # Used to impute missing data points for some weather stations in some days
+library(tibble)
+library(FSA)
 ##Data import and setup
-PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
-PhenolAllData<-subset(PhenolAllData, Year >=1960)
+# PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
+# PhenolAllData<-subset(PhenolAllData, Year >=1960)
 GHData<-read.csv("MontagueData_Cleaned.csv", header=T, stringsAsFactors = F)
 GHData<-GHData[-1,] # Remove dummy variable from 1st row
 GHData$Longitude<-GHData$Longitude*-1
@@ -13,8 +18,8 @@ names(GHData)[1]<-"Pop_Code"
 
 ##set bounds to get subset for validation in greenhouse population range
 ##north and west bounds
-ValidHerb<- PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
-ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
+# ValidHerb<- PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
+# ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 
 ###Create list of populations and the locations
 ###pull out unique populations and their coordinates
@@ -114,7 +119,9 @@ for(year in (2003:2003)){
       #Calculations for season length, and season to collection, moments of distribution
       GD <- (end - begin) + 1  ##season length, need +1 so start of season is included
       GDs <- yday - begin + 1 ##length of season to collection, need +1 so start of season is included
+      # GDs <- yday 
       GDD <- sum(test$GDeg[begin:end]) ## GDD for the entire season
+      # yday<- yday+begin
       GDDs <- sum(test$GDeg[begin:yday]) ##GDD from start of season to collection
       
       test <- test[c(begin:end),] ##subset data to only growing season
@@ -160,7 +167,7 @@ for(year in (2003:2003)){
       GreenhouseData$kurtGDeg[GreenhouseData$Pop_Code==Pop]<-predict(tpskurtGDeg,x=GreenhouseData[GreenhouseData$Pop_Code==Pop,c("Longitude","Latitude")],scale.type="unscaled")
       GreenhouseData$numStns[GreenhouseData$Pop_Code==Pop]<-nrow(GeoDat)
       # SAVE output
-      write.csv(GreenhouseData,"GreenhouseData_wGDD2003.csv",row.names=F)
+      write.csv(GreenhouseData,"GreenhouseData_wGDDYday.csv",row.names=F)
     }
     cat("***************\nIteration ",Cntr," of",length(unique(GreenhouseData$Pop_Code)),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGDD: ",GreenhouseData$GDD[GreenhouseData$Pop_Code==Pop],"\nGDays: ",GreenhouseData$GDays[GreenhouseData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
