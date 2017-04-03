@@ -15,13 +15,12 @@ PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
 ## create find and fti for Greenhouse and Field data
 
 ##problem here with GreenhouseData and FieldData, yday for Greenhousedata is from start of growing season 
-GreenhouseData$find<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/sd(GreenhouseData$yday, na.rm=TRUE)
-GreenhouseData$fti <- (GreenhouseData$find) + (GreenhouseData$GDDs-mean(GreenhouseData$GDDs,na.rm=TRUE))/sd(GreenhouseData$GDDs,na.rm=TRUE)
-FieldData$find<- FieldData$find<-(FieldData$yday-mean(FieldData$yday, na.rm=TRUE))/sd(FieldData$yday, na.rm=TRUE)
+GreenhouseData$fti<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/sd(GreenhouseData$yday, na.rm=TRUE)
+FieldData$find<-(FieldData$yday-mean(FieldData$yday, na.rm=TRUE))/sd(FieldData$yday, na.rm=TRUE)
 FieldData$fti<- (FieldData$find) + (FieldData$GDDs-mean(FieldData$GDDs,na.rm=TRUE))/sd(FieldData$GDDs,na.rm=TRUE)
 
 ##Subset data frames
-GreenhouseData<-GreenhouseData[,c(1,7:8,18,17,19:27, 29)]
+GreenhouseData<-GreenhouseData[,c(1,7:8,18,17,19:28)]
 FieldData<-FieldData[,c(1:3, 10, 17:26, 28)]
 
 ##change years here, will see different slopes for herbarium. Herbarium slope flattens out in more recent years, ie 1990, 2000
@@ -43,5 +42,6 @@ ggplot(AllData, aes(x=GD, y=fti, color=Source))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
 summary(lm(fti~GD*Source, data=AllData))
 
-ggplot(AllData, aes(x=GDDs, y=fti, color=Source))+
+ggplot(AllData, aes(x=Latitude, y=fti, color=Source))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
+summary(lm(fti~Latitude*Source, data=AllData))
