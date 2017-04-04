@@ -24,7 +24,7 @@ GreenhouseData<-GreenhouseData[,c(1,7:8,18,17,19:28)]
 FieldData<-FieldData[,c(1:3, 10, 17:26, 28)]
 
 ##change years here, will see different slopes for herbarium. Herbarium slope flattens out in more recent years, ie 1990, 2000
-PhenolAllData<-subset(PhenolAllData, Year >=1970)
+PhenolAllData<-subset(PhenolAllData, Year >=1960)
 ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
 ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
 HerbData<-ValidHerb[,c(1, 10:22,35)]
@@ -41,7 +41,12 @@ AllData<-rbind(GreenhouseData, FieldData, HerbData)
 ggplot(AllData, aes(x=GD, y=fti, color=Source))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
 summary(lm(fti~GD*Source, data=AllData))
+anova(lm(fti~GD*Source, data=AllData))
 
-ggplot(AllData, aes(x=Latitude, y=fti, color=Source))+
-  geom_point(alpha=0.2)+geom_smooth(method="lm")
+ggplot(AllData, aes(x=Latitude, y=fti))+
+  geom_point(aes(colour=Source),data=AllData[AllData$Source=="Herbarium",],alpha=0.2) +
+  geom_point(aes(colour=Source),data=AllData[AllData$Source!="Herbarium",],alpha=0.6,size=4) +
+  geom_smooth(method="lm")+xlim(37.5,47)
 summary(lm(fti~Latitude*Source, data=AllData))
+anova(lm(fti~Latitude*Source, data=AllData))
+
