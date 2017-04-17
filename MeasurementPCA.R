@@ -34,12 +34,13 @@ data$infl.cm<-data$flower.cm+data$bud.cm+data$fruit.cm+data$a.flower.cm
 
 # Calculate a phenology index based on proportion of buds, flowers and fruits:
 
-## fruit has a value of +1
+## fruit has a value of -1
 ## flower has a value of 0
-## bud has a value of -1
-## (fruit*(+1) + flower*0 + bud*(-1))/(fruit+flower+bud)
+## bud has a value of +1
+## (fruit*(-1) + flower*0 + bud*(+1))/(fruit+flower+bud)
 ## aborted flowers treated as fruits (earliest)
-data$phind<-(data$fruit.cm+data$a.flower.cm-data$bud.cm)/data$infl.cm
+## THEREFORE: -- means early phenology ++ means late phenology 
+data$phind<-(data$bud.cm-data$fruit.cm-data$a.flower.cm)/data$infl.cm
 
 ## Alternatively, use PCA
 ## principal components analysis of inflorescence structure
@@ -133,8 +134,6 @@ summary(lm(phind~GDs*GD,data=PhenolAllData))
 ##GDs and GDs:GD is significant, GD becomes non-significant
 
 
-
-
 ## Similar result for growing degree days
 summary(lm(phPC~GDD,data=PhenolAllData)) # Total growing degree days (GDD) not a good predictor
 summary(lm(phPC~GDDs,data=PhenolAllData)) # GDD until sampling (GDDs) is a good predictor, as expected
@@ -210,8 +209,8 @@ binx<-0.5 ## long bin size in degrees
 biny<-0.5 ## lat bin size in degrees
 
 ## Define long x lat
-longs<-seq(min(PhenolAllData$Longitude,na.rm=T)+binx,max(PhenolAllData$Longitude,na.rm=T)-binx,by=binx)
-lats<-seq(min(PhenolAllData$Latitude,na.rm=T)+biny,max(PhenolAllData$Latitude,na.rm=T)-biny,by=biny)
+longs<-seq(min(PhenolAllData$Longitude,na.rm=T)+binx,max(PhenolAllData$Longitude,na.rm=T)-binx,by=binx*2)
+lats<-seq(min(PhenolAllData$Latitude,na.rm=T)+biny,max(PhenolAllData$Latitude,na.rm=T)-biny,by=biny*2)
 
 ## Make into matrix
 bindat<-data.frame(Long=rep(longs,length(lats)),Lat=sort(rep(lats,length(longs))),fti=NA,GD=NA)
@@ -234,10 +233,18 @@ bindat$Region[bindat$Long <= -95 & bindat$Long > -122]<-"West"
 bindat$Region[bindat$Long <= -122]<-"WestCoast"
 bindat$Region<-as.factor(bindat$Region)
 
+# Finally, calculate average for each latitude
+bindat<-aggregate(cbind(bindat$fti,bindat$GD),by=list(bindat$Lat,bindat$Region),FUN="mean",na.rm=T)
+names(bindat)<-c("Lat","Region","fti","GD")
+
 ## Look at clines by region
 ggplot(bindat, aes(x=GD, y=fti,colour=Region)) + facet_grid(Region~.)+
-  geom_point(alpha=0.2)+geom_smooth(method="lm") 
+  geom_point(size=3)+geom_smooth(method="lm") 
 summary(lm(fti~GD*Region, data=bindat))
+
+ggplot(bindat, aes(x=Lat, y=fti,colour=Region)) + facet_grid(Region~.)+
+  geom_point(size=3)+geom_smooth(method="lm") 
+summary(lm(fti~Lat*Region, data=bindat))
 
 qplot(GD,fti,data=PhenolAllData,alpha=I(0.2))+geom_smooth(method="lm")
 
