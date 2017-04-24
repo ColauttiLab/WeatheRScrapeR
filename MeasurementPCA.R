@@ -139,7 +139,6 @@ summary(lm(phPC~GDD,data=PhenolAllData)) # Total growing degree days (GDD) not a
 summary(lm(phPC~GDDs,data=PhenolAllData)) # GDD until sampling (GDDs) is a good predictor, as expected
 summary(lm(phPC~GDDs*GDD,data=PhenolAllData)) # GDD becomes significant after controlling for GDDs
 
-##Yihan: phPC~GDDs*GDD, GDD is not significant
 
 summary(lm(phind~GDD,data=PhenolAllData)) # Total growing degree days (GDD) not a good predictor
 summary(lm(phind~GDDs,data=PhenolAllData)) # GDD until sampling (GDDs) is a good predictor, as expected
