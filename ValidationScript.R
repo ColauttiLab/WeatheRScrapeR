@@ -14,7 +14,6 @@ PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
 
 ## create find and fti for Greenhouse and Field data
 
-##problem here with GreenhouseData and FieldData, yday for Greenhousedata is from start of growing season 
 GreenhouseData$fti<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/sd(GreenhouseData$yday, na.rm=TRUE)
 FieldData$find<-(FieldData$yday-mean(FieldData$yday, na.rm=TRUE))/sd(FieldData$yday, na.rm=TRUE)
 FieldData$fti<- (FieldData$find) + (FieldData$GDDs-mean(FieldData$GDDs,na.rm=TRUE))/sd(FieldData$GDDs,na.rm=TRUE)
