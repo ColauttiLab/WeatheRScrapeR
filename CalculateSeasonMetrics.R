@@ -173,7 +173,7 @@ for(year in (1866:2015)){
     
     
     # Spatial interpolation of GDD
-    if(nrow(GeoDat)>=10){ # Only interpolate if at least 10 stations available
+    if(nrow(GeoDat)>=5){ # Only interpolate if at least 5 stations available
       # Interpolate GDD for Pop
       ### ALSO CHANGE THIS TO INTERPOLATE FOR GDD, GD, GDDs, GDs
       tpsGD<-Tps(x=GeoDat[,c("Longitude","Latitude")],Y=GeoDat$GD,scale.type="unscaled", lon.lat=T)
@@ -194,11 +194,25 @@ for(year in (1866:2015)){
       PopData$skewGDeg[PopData$Pop_Code==Pop]<-predict(tpsskewGDeg,x=PopData[PopData$Pop_Code==Pop,c("Longitude","Latitude")],scale.type="unscaled")
       PopData$kurtGDeg[PopData$Pop_Code==Pop]<-predict(tpskurtGDeg,x=PopData[PopData$Pop_Code==Pop,c("Longitude","Latitude")],scale.type="unscaled")
       PopData$numStns[PopData$Pop_Code==Pop]<-nrow(GeoDat)
-      # SAVE output
-      write.csv(PopData,"PopData_wGDDtest.csv",row.names=F)
+      
+    } else {
+      if (nrow(GeoDat)>1) {
+        GeoDat<-GeoDat[order(GeoDat$Dist),]
+      }
+      PopData$GD[PopData$Pop_Code==Pop]<-GeoDat[1, "GD"]
+      PopData$GDs[PopData$Pop_Code==Pop]<-GeoDat[1, "GDs"]
+      PopData$GDD[PopData$Pop_Code==Pop]<-GeoDat[1, "GDD"]
+      PopData$GDDs[PopData$Pop_Code==Pop]<-GeoDat[1, "GDDs"]
+      PopData$meanGDeg[PopData$Pop_Code==Pop]<-GeoDat[1, "meanGDeg"]
+      PopData$varGDeg[PopData$Pop_Code==Pop]<-GeoDat[1, "varGDeg"]
+      PopData$skewGDeg[PopData$Pop_Code==Pop]<-GeoDat[1, "skewGDeg"]
+      PopData$kurtGDeg[PopData$Pop_Code==Pop]<-GeoDat[1, "kurtGDeg"]
+      PopData$numStns[PopData$Pop_Code==Pop]<-1
     }
     cat("***************\nIteration ",Cntr," of",length(unique(PopData$Pop_Code)),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGDD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDays: ",PopData$GDays[PopData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
+    # SAVE output
+    write.csv(PopData,"PopData_wGDDtest.csv",row.names=F)
   }
   GDData<-GDFilePath<-NA # Clean-up for next iteration of year
 }
