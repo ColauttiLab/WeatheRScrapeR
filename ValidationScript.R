@@ -7,8 +7,10 @@ library(ggplot2)
 
 
 ##Data import
-GreenhouseData<-read.csv("GreenhouseData_wGDDYDay.csv", header=T)
-FieldData<-read.csv("FieldData_wGDDtest.csv", header=T)
+GreenhouseData<-read.csv("MontagueGreenhousePopulations_wGDD_IDW.csv", header=T, stringsAsFactors = F)
+FieldData<-read.csv("MontagueFieldPopulations_wGDD_IDW.csv", header=T, stringsAsFactors = F)
+
+CommonGarden<-read.csv("CommonGarden_wGDD_IDW.csv", stringsAsFactors = F)
 PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
 
 
@@ -18,27 +20,36 @@ GreenhouseData$fti<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/
 FieldData$find<-(FieldData$yday-mean(FieldData$yday, na.rm=TRUE))/sd(FieldData$yday, na.rm=TRUE)
 FieldData$fti<- (FieldData$find) + (FieldData$GDDs-mean(FieldData$GDDs,na.rm=TRUE))/sd(FieldData$GDDs,na.rm=TRUE)
 
+CommonGarden$find<-(CommonGarden$yday-mean(CommonGarden$yday, na.rm=TRUE))/sd(CommonGarden$yday, na.rm=TRUE)
+CommonGarden$fti<- (CommonGarden$find) + (CommonGarden$GDDs-mean(CommonGarden$GDDs,na.rm=TRUE))/sd(CommonGarden$GDDs,na.rm=TRUE)
+
+
+
 ##Subset data frames
-GreenhouseData<-GreenhouseData[,c(1,7:8,18,17,19:28)]
-FieldData<-FieldData[,c(1:3, 10, 17:26, 28)]
+GreenhouseData<-GreenhouseData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
+FieldData<-FieldData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
+CommonGarden<- CommonGarden[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
 
 ##change years here, will see different slopes for herbarium. Herbarium slope flattens out in more recent years, ie 1990, 2000
 PhenolAllData<-subset(PhenolAllData, Year >=1960)
 ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
 ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
-HerbData<-ValidHerb[,c(1, 10:22,35)]
+HerbData<-ValidHerb[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
 
 ##Attach data source as columns to all data frames
 
 GreenhouseData$Source<-"Greenhouse"
 FieldData$Source<-"Field"
+CommonGarden$Source<-"CommonGardens"
 HerbData$Source<-"Herbarium"
+
 ##bind all three data frames
-AllData<-rbind(GreenhouseData, FieldData, HerbData)
+AllData<-rbind(GreenhouseData, FieldData, CommonGarden, HerbData)
 
 
 ggplot(AllData, aes(x=GD, y=fti, color=Source))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
+
 summary(lm(fti~GD*Source, data=AllData))
 anova(lm(fti~GD*Source, data=AllData))
 
