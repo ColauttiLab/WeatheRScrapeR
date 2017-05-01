@@ -107,7 +107,7 @@ for(year in (1866:2015)){
     PopGDData<-GDData[GDData$StationID %in% LocStns,]
     
     # Make data frame to collect GDD, lat and long for each station
-    GeoDat<-unique(StnData[StnData$StationID %in% LocStns,c(1:3,6)])
+    GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% LocStns,c("StationID", "Latitude", "Longitude", "Dist")])
     GeoDat$GD<-NA ##Tota Growing Season Length (in Days)
     GeoDat$GDs<-NA ##Growing Seaon Length to collection (in Days)
     GeoDat$GDD<-NA ##Total Growing Degree Days over season (in Growing Degrees)
