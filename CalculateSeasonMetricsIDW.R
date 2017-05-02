@@ -37,11 +37,10 @@ for ( i in 1:length(files)) {
 ## Load data
 ##############################
 setwd("C:/Users/YIHANWU/Documents/2016 Queens/WeatherScraper/WeatherScraper/")
-StnData<-read.csv("WeatherRawData/NOAACommonGardenData.csv")
-PopData<-read.csv("CommonGardenFloweringData.csv", header=T)
+StnData<-read.csv("WeatherRawData/NOAAStationData.csv")
+PopData<-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
 
 
-names(PopData)[1:2]<- c("Plant_Id", "Pop_Code")
 
 ##############################
 ## Calculate GDD for 20 closest stations for each Pop
@@ -75,7 +74,7 @@ Cntr<-0
 for(year in (2008:2010)){ 
   
   # Open file with GD data
-  GDFilePath<-paste0("WeatherRawData/NOAACommonGarden",year,".csv") 
+  GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
   GDData<-read.csv(GDFilePath)
   for(Pop in PopData$Pop_Code[PopData$Year==year]){ # Cycle through pop_codes sampled in same year as GD data
     Cntr<-Cntr+1
@@ -110,7 +109,7 @@ for(year in (2008:2010)){
     PopGDData<-GDData[GDData$StationID %in% LocStns,]
     
     # Make data frame to collect GDD, lat and long for each station
-    GeoDat<-unique(StnData[StnData$StationID %in% LocStns,c(1:3,6)])
+    GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% LocStns,c("StationID", "Latitude", "Longitude", "Dist")])
     GeoDat$GD<-NA ##Tota Growing Season Length (in Days)
     GeoDat$GDs<-NA ##Growing Seaon Length to collection (in Days)
     GeoDat$GDD<-NA ##Total Growing Degree Days over season (in Growing Degrees)
@@ -201,7 +200,7 @@ for(year in (2008:2010)){
       PopData$kurtGDeg[PopData$Pop_Code==Pop]<-GeoDat[1, "kurtGDeg"]
       PopData$numStns[PopData$Pop_Code==Pop]<-1
     }
-    cat("***************\nIteration ",Cntr," of",length(PopData$Pop_Code),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGDD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDDs: ",PopData$GDDs[PopData$Pop_Code==Pop],"\n***************")
+    cat("***************\nIteration ",Cntr," of",length(PopData$Pop_Code),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDDs: ",PopData$GDDs[PopData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
     # SAVE output
     write.csv(PopData,"CommonGarden_wGDD.csv",row.names=F)
