@@ -18,11 +18,9 @@ source("clstation.R")
 ##############################
 ## Load population data
 ##############################
-library(lubridate)
-PopData<-read.csv("PopData.csv")
-PopData$yday <-yday(PopData$Date)
-PopData$Year <-year(PopData$Date)
 
+PopData<-read.csv("PopData.csv")
+print("ReadinData")
 ##############################
 ## 1. Find Weather Stations
 ##############################
@@ -80,6 +78,7 @@ if(file.exists("WeatherRawData/NOAAStationData.csv")){
       }
       # Add to main Stations list
       NOAAData<-rbind(NOAAData,KeepSt)
+	  print(i)
     }      
   }
   # Eliminate unused factor levels
@@ -121,8 +120,12 @@ for (year in 1866:2015){
     names(WthrData)<-c("StationID","Date","TMAX","TMIN","SNWD","PRCP","WESD")
     WthrData$Date<-as.Date(gsub("([0-9]{4})([0-9]{2})([0-9]{2})","\\1-\\2-\\3",WthrData$Date))
     WthrData$Day<-strptime(WthrData$Date,format="%Y-%m-%d")$yday
+    ##GDD calculation, (Tmax + Tmin)/2 - Tbase, divided by ten due to the temperature being counted in tenths of a degree
+    WthrData$GDeg <- (WthrData$TMAX/10 + WthrData$TMIN/10)/2 - 8
+    WthrData$GDeg <- ifelse(WthrData$GDeg < 0, 0, WthrData$GDeg)
     # Save data frame
     write.csv(WthrData,GDFilePath,row.names=FALSE)
+	print(GDFilepath)
   }
 }
 
