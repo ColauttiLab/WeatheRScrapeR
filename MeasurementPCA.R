@@ -6,9 +6,9 @@
 
 ## Libraries
 library(ggplot2)
-library(dplyr)
+library(tidyverse)
 ### Measurement data
-data <-read.csv("PopData_wGDD.csv", header=T)
+data <-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
 str(data)
 names(data)
 summary(data)##check if there are NAs for yday and Year or the measurements.
@@ -19,7 +19,7 @@ data %>% mutate_if(is.factor, as.character) -> data
 #data$Pop_Code<-as.character(data$Pop_Code)
 
 ## exclude 'populations' (i.e. sample locations) that are missing climate data
-data<-subset(data,!(is.na(data["numStns"])))
+data<-subset(data,!(is.na(data["GD"])))
 # calculate actual lengths in cm
 # length of flower portion of inflorescence (converting pixels to cm)
 data$flower.cm<-data$actual/data$standard*data$flower.inf.length
