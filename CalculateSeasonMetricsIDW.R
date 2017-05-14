@@ -203,7 +203,7 @@ for(year in (2008:2010)){
     cat("***************\nIteration ",Cntr," of",length(PopData$Pop_Code),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDDs: ",PopData$GDDs[PopData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
     # SAVE output
-    write.csv(PopData,"CommonGarden_wGDD.csv",row.names=F)
+    write.csv(PopData,"HerbariumPopData_wGDD_IDW.csv.csv",row.names=F)
   }
   GDData<-GDFilePath<-NA # Clean-up for next iteration of year
 }
