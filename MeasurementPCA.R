@@ -161,16 +161,6 @@ ggplot(PhenolAllData, aes(x=Latitude, y=fti, color=Region)) + facet_grid(Region~
 summary(lm(fti~Latitude*Region, data=PhenolAllData))
 
 
-Latclinebyregion<-ggplot(PhenolAllData, aes(x=Latitude, y=fti, color=Region))+ 
-  facet_grid(Region~.) +
-  geom_point(alpha=0.3, size=5)+
-  geom_smooth(method="lm", size=3) +
-  theme_bw() + 
-  theme(plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank()) +
-  theme(axis.line = element_line(color = 'black'), legend.position = "none") +
-  theme(text = element_text(size=20))
-ggsave(Latclinebyregion, filename = "Latclinebyregion.png", height=8, width=8, dpi=300)
-
 ## Cool clines with latitude, steeper in east than west, but what about GD:
 ggplot(PhenolAllData, aes(x=Latitude, y=GD, color=Region)) + facet_grid(Region~.) +
   geom_point(alpha=0.2)+geom_smooth(method="lm") # Also steeper in east than west
@@ -185,32 +175,6 @@ summary(lm(fti~GD*Region, data=PhenolAllData))
 summary(lm(fti~GD*Region*Year, data=PhenolAllData))
 ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + facet_grid(Region~Era) +
   geom_point(alpha=0.2)+geom_smooth(method="lm")
-
-
-
-
-Latclinebyera<-ggplot(PhenolAllData, aes(x=Latitude, y=fti, color=Region)) + 
-  facet_grid(Region~Era) +
-  geom_point(alpha=0.2, size=5)+
-  geom_smooth(method="lm")+
-  theme_bw() + 
-  theme(plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank()) +
-  theme(axis.line = element_line(color = 'black'), legend.position = "none") +
-  theme(text = element_text(size=20))
-ggsave(Latclinebyera, filename = "Latclinebyera.png", height=8, width=8, dpi=300)
-
-
-GDclinebyera<-ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) + 
-  facet_grid(Region~Era) +
-  geom_point(alpha=0.2, size=5)+
-  geom_smooth(method="lm")+
-  theme_bw() + 
-  theme(plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank()) +
-  theme(axis.line = element_line(color = 'black'), legend.position = "none") +
-  theme(text = element_text(size=20))
-ggsave(GDclinebyera, filename = "GDclinebyera.png", height=8, width=8, dpi=300)
-
-
 
 
 mod1<-lm(fti~GD+Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
