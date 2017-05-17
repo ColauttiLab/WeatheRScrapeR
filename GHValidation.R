@@ -37,6 +37,7 @@ StnData<-read.csv("WeatherRawData/NOAAMontagueStation.csv", header=T)
 GreenhouseData$Year<-2003
 GreenhouseData$yday<-round(GreenhouseData$Days) ##rounded in order to make GD and GDD calcuations
 names(GreenhouseData)[1]<-"Pop_Code"
+write.csv(GreenhouseData, "MontagueGreenhouse.csv", row.names=F)
 
 Cntr<-0
 for(year in (2003:2003)){ 
