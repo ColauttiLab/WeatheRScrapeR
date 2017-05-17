@@ -6,7 +6,26 @@ data <-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
 ## map map of the world
 mapWorld <- borders("world", colour="gray50", fill="gray100") # create a layer of borders
 
+## normal map with all specimens
+NAmap<- ggplot(data, aes(x=Longitude, y=Latitude)) + 
+  ## uses the world map from above
+  mapWorld +
+  geom_point(color="#CC33FF", alpha=0.5) +
+  ## set limits on map to only show North American range
+  coord_cartesian(ylim=c(32,53), xlim=c(-128,-60)) + 
+  ## removes all titles and markings on x and y axis
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(), 
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank())+
+  ## adds label for year, positioning at bottom right corner
+  geom_text(aes(family="serif", label="1866 - 2016", y=33, x=-70), color="black")
 
+## save map
+
+ggsave(NAmap, filename ="NAmap.png" ,width = 4,height=2,dpi = 150)
 ## loop creates one image for every year in range, 
 for(i in 1866:2016) {
   gif<-ggplot(data, aes(x=Longitude, y=Latitude)) + 
