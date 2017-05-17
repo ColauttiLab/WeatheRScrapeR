@@ -256,6 +256,7 @@ qplot(GD,fti,data=PhenolAllData,alpha=I(0.2))+geom_smooth(method="lm")
 
 
 
-
+PhenolAllData %>% group_by(Era, Region) %>% summarize( cor (fti, Latitude)) -> correlationslat
+PhenolAllData %>% group_by(Era, Region) %>% summarize( cor (fti, GD)) -> correlationsGD
 
 
