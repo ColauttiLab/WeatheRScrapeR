@@ -51,7 +51,5 @@ write.csv(FloweringData, "CommonGardenFloweringData.csv", row.names=FALSE)
 
 ##create station list for each location, done on server, 
 
-
-CommonGardenData<-read.csv("CommonGarden_wGDD.csv", header=T)
-
+CommonGarden<-read.csv("CommonGarden_wGDD.csv", header=T)
 
