@@ -9,7 +9,7 @@ library(tidyverse)
 
 ##Data import
 GreenhouseData<-read.csv("MontagueGreenhousePopulations_wGDD__IDW2.csv", header=T, stringsAsFactors = F)
-FieldData<-read.csv("MontagueFieldPopulations_wGDD__IDW2.csv", header=T, stringsAsFactors = F)
+#FieldData<-read.csv("MontagueFieldPopulations_wGDD__IDW2.csv", header=T, stringsAsFactors = F)
 
 CommonGarden<-read.csv("CBCommonGardenPopulations_wGDD__IDW2.csv", stringsAsFactors = F)
 names(CommonGarden)[1]<-"Individualnumber"
@@ -21,8 +21,8 @@ PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
 
 GreenhouseData$fti<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/sd(GreenhouseData$yday, na.rm=TRUE)
 
-FieldData$find<-(FieldData$GDs-mean(FieldData$GDs, na.rm=TRUE))/sd(FieldData$GDs, na.rm=TRUE)
-FieldData$fti<- (FieldData$find) + (FieldData$GDDs-mean(FieldData$GDDs,na.rm=TRUE))/sd(FieldData$GDDs,na.rm=TRUE)
+#FieldData$find<-(FieldData$GDs-mean(FieldData$GDs, na.rm=TRUE))/sd(FieldData$GDs, na.rm=TRUE)
+#FieldData$fti<- (FieldData$find) + (FieldData$GDDs-mean(FieldData$GDDs,na.rm=TRUE))/sd(FieldData$GDDs,na.rm=TRUE)
 
 
 CommonGarden %>% separate(Plant_ID, c("Sitenumber", "Site1", "Mat", "Row", "Position"), sep="_" ) -> CommonGarden
@@ -52,7 +52,7 @@ CommonGarden$fti<- (CommonGarden$find) + (CommonGarden$GDDs-mean(CommonGarden$GD
 
 ##Subset data frames
 GreenhouseData<-GreenhouseData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
-FieldData<-FieldData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
+#FieldData<-FieldData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
 CommonGarden<- CommonGarden[,c("Pop_Code","Longitude","yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti", "Lat", "Site1")]
 
 ##change years here, will see different slopes for herbarium. Herbarium slope flattens out in more recent years, ie 1990, 2000
@@ -64,17 +64,17 @@ HerbData<-ValidHerb[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD"
 ##Attach data source as columns to all data frames
 
 GreenhouseData$Source<-"Greenhouse"
-FieldData$Source<-"Field"
+#FieldData$Source<-"Field"
 HerbData$Source<-"Herbarium"
 #CommonGarden$Source<-"CommonGarden"
 names(CommonGarden)[15]<-"Latitude"
 names(CommonGarden)[16]<-"Source"
 ##bind all three data frames
-AllData<-rbind(GreenhouseData, FieldData, CommonGarden, HerbData)
+AllData<-rbind(GreenhouseData, CommonGarden, HerbData)
 
 
 
-ggplot(AllData, aes(x=GD, y=fti, color=Source))+
+ggplot(AllData, aes(x=Latitude, y=fti, color=Source))+
   geom_point(alpha=0.2)+geom_smooth(method="lm")
 
 summary(lm(fti~GD, data=AllData))
