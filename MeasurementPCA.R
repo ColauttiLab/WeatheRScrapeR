@@ -260,3 +260,8 @@ PhenolAllData %>% group_by(Era, Region) %>% summarize( cor (fti, Latitude)) -> c
 PhenolAllData %>% group_by(Era, Region) %>% summarize( cor (fti, GD)) -> correlationsGD
 
 
+
+PhenolAllData %>% group_by(Region, Era) %>% do(latmodel=lm(fti~Latitude, data=.)) -> Latslopes
+Latcoefficients<- Latslopes %>% tidy(latmodel)
+PhenolAllData %>% group_by(Region, Era) %>% do(GDmodel=lm(fti~GD, data=.)) -> GDslopes
+GDcoeeficients<- GDslopes %>% tidy(GDmodel)
