@@ -53,3 +53,43 @@ write.csv(FloweringData, "CommonGardenFloweringData.csv", row.names=FALSE)
 
 CommonGarden<-read.csv("CommonGarden_wGDD.csv", header=T)
 
+
+
+library(tidyverse)
+CommonGarden<-read.csv("CBCommonGardenPopulations_wGDD__IDW2.csv", stringsAsFactors = F)
+names(CommonGarden)[1]<-"Individualnumber"
+CommonGarden %>% separate(Plant_ID, c("Sitenumber", "Site1", "Mat", "Row", "Position"), sep="_" ) -> CommonGarden
+
+CommonGarden$Pop<-CommonGarden$Mat # Extract population code from maternal family code
+CommonGarden$Pop<-gsub("[0-9]","",CommonGarden$Pop)
+# CommonGarden$Origin<-CommonGarden$Pop 
+
+
+AllData<-read.table("AllDataFixed.txt", header=T, sep=",")
+AllData<-AllData[,c("Pop_Code", "Pop", "Lat")]
+names(AllData)<-c("Pop", "Pop_Code", "Lat")
+AllData<-unique(AllData)
+AllData %>% mutate_if(is.factor, as.character) -> AllData
+CommonGarden<-left_join(CommonGarden, AllData)
+
+
+CommonGarden$find<-(CommonGarden$GDs-mean(CommonGarden$GDs, na.rm=TRUE))/sd(CommonGarden$GDs, na.rm=TRUE)
+CommonGarden$fti<- (CommonGarden$find) + (CommonGarden$GDDs-mean(CommonGarden$GDDs,na.rm=TRUE))/sd(CommonGarden$GDDs,na.rm=TRUE)
+
+
+summary<- CommonGarden %>% 
+  group_by(Site, Pop) %>% 
+  summarize (
+    fti.mean = mean(fti, na.rm = TRUE),
+    fti.sd = sd(fti, na.rm=TRUE),
+    n = n(),
+    Latitude = mean(Lat, na.rm=TRUE)) %>% 
+  mutate(lower.ci=fti.mean - 1.96*fti.sd/sqrt(n), upper.ci = fti.mean + 1.96*fti.sd/sqrt(n))
+
+
+ggplot(summary, aes(x=Latitude, y=fti.mean, color=Site)) +
+  geom_point() + 
+  geom_errorbar(aes(ymin=lower.ci, ymax=upper.ci))
+
+
+
