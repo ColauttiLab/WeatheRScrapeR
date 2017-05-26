@@ -57,7 +57,7 @@ Cntr<-0
 # For each year: 
 
 
-for(year in (1866:2016)){ 
+for(year in (1972:2016)){ 
   
   # Open file with GD data
   GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
@@ -108,9 +108,8 @@ for(year in (1866:2016)){
     # 
     
   # Growing degree day interpolation 
-  
-    test$GDeg <- NULL
-    for (i in 1:nrow(test)) { test$GDeg[i] <- idw(GeoDat$Dist, test[i,])}
+    test$GDeg<- apply(test,1, FUN=idw, distance=GeoDat$Dist)
+    
 
 
    
@@ -140,14 +139,15 @@ for(year in (1866:2016)){
       #Calculations for season length, and season to collection, moments of distribution
     GD <- (end - begin) + 1  ##season length, need +1 so start of season is included
     GDs <- yday-begin+1 ##length of season to collection, need +1 so start of season is included
-    GDD <- sum(test$GDeg[begin:end]) ## GDD for the entire season
-    GDDs <- sum(test$GDeg[begin:yday]) ##GDD from start of season to collection
+    test[mapply(is.infinite, test)] <- NaN
+    GDD <- sum(test$GDeg[begin:end], na.rm=T) ## GDD for the entire season
+    GDDs <- sum(test$GDeg[begin:yday], na.rm=T) ##GDD from start of season to collection
       
     test <- test[c(begin:end),] ##subset data to only growing season
-    meanGDeg <- mean(test$GDeg) ##mean of growing degrees per day
-    varGDeg <- sum((test$GDeg - meanGDeg)^2)/GD ## var of growing degrees per day for growing season, no adjustion for sample size
-    skewGDeg <- ((sum((test$GDeg - meanGDeg)^3))/GD) /(varGDeg)^(3/2) ##skewness, Fisher-Pearson (not adjusted for sample size)
-    kurtGDeg <- ((sum((test$GDeg - meanGDeg)^4))/GD) /(varGDeg)^(4/2) -3 ##excess kurtosis for univariate data, 
+    meanGDeg <- mean(test$GDeg, na.rm=T) ##mean of growing degrees per day
+    varGDeg <- sum((test$GDeg - meanGDeg)^2, na.rm=T)/GD ## var of growing degrees per day for growing season, no adjustion for sample size
+    skewGDeg <- ((sum((test$GDeg - meanGDeg)^3, na.rm=T))/GD) /(varGDeg)^(3/2) ##skewness, Fisher-Pearson (not adjusted for sample size)
+    kurtGDeg <- ((sum((test$GDeg - meanGDeg)^4, na.rm=T))/GD) /(varGDeg)^(4/2) -3 ##excess kurtosis for univariate data, 
       
       
       
