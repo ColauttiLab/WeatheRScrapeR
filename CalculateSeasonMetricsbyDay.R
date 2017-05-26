@@ -4,7 +4,7 @@
 ## then interpolates GDD for each population
 ## and growing season metrics.
 ############################################
-
+options(warn=2)
 
 ##############################
 ## Load functions
@@ -24,7 +24,7 @@ source("idw.R")
 ##############################
 #setwd("~/2016 Queens/WeatherScraper/WeatherScraper/")
 StnData<-read.csv("WeatherRawData/NOAAStationData.csv")
-PopData<-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
+PopData<-read.csv("PopData.csv", header=T)
 
 
 
@@ -57,7 +57,7 @@ Cntr<-0
 # For each year: 
 
 
-for(year in (2008:2010)){ 
+for(year in (1866:2016)){ 
   
   # Open file with GD data
   GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
@@ -69,24 +69,32 @@ for(year in (2008:2010)){
     # Subset GDData for stations of interest from Jan 1 to day of sampling
     # find all stations in station list, and cross with all stations in the year data
     PopGDData<-GDData[GDData$StationID %in% LocStns,]
-    
-    
-    # Make data frame get geographic distance, lat, long for each station, subset to 20 stations if necessary
-    # find all stations from station list based on population code, and only the stations that exist in yearly data set
-    GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% unique(PopGDData$StationID),c("StationID", "Latitude", "Longitude", "Dist")])
-    # reduce number of stations to closest 20
-    if (nrow(GeoDat) > 20) { 
-      GeoDat<- head(GeoDat[order(GeoDat$Dist),],20)
-    }
-    ## resubset again to reduce yearly data set to only the data on the twenty or less stations
-    PopGDData<-GDData[GDData$StationID %in% GeoDat$StationID,]
     # reshape data frame so that each row is a day, and each column a station
     test<- dcast(PopGDData, Date ~ StationID, value.var = "GDeg")
     ## make days the row names
     test %>% remove_rownames %>% column_to_rownames(var="Date") -> test
     test<- test[colSums(!is.na(test)) > 0]
+    StnId<-names(test)
+    # find all stations from station list based on population code, and only the stations that exist in yearly data set
+    # Make data frame get geographic distance, lat, long for each station, subset to 20 stations if necessary
     
-    ## double check here for stations in data set
+    GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% StnId,c("StationID", "Latitude", "Longitude", "Dist")])
+    
+    
+    if (ncol(test) >20 ) {
+      # reduce number of stations to closest 20
+      GeoDat<- head(GeoDat[order(GeoDat$Dist),],20)
+      PopGDData<-GDData[GDData$StationID %in% GeoDat$StationID,]
+      ## resubset again to reduce yearly data set to only the data on the twenty or less stations
+      test<- dcast(PopGDData, Date ~ StationID, value.var = "GDeg")
+      ## make days the row names
+      test %>% remove_rownames %>% column_to_rownames(var="Date") -> test
+      ## double check here for stations in data set
+      test<- test[colSums(!is.na(test)) > 0]
+      StnId<-names(test)
+      GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% StnId,c("StationID", "Latitude", "Longitude", "Dist")])
+      
+      }
 
 
     # GeoDat$GD<-NA ##Tota Growing Season Length (in Days)
@@ -102,13 +110,13 @@ for(year in (2008:2010)){
   # Growing degree day interpolation 
   
     test$GDeg <- NULL
-    for (i in 1:365) { test$GDeg[i] <- idw(GeoDat$Dist, test[i,])}
+    for (i in 1:nrow(test)) { test$GDeg[i] <- idw(GeoDat$Dist, test[i,])}
 
 
    
     ##Calculate GD, GDs, GDD, GDDs values for each station
       ###
-    yday<-as.numeric(PopData$yday[PopData$Pop_Code==Pop])
+    yday<-as.numeric(PopData$yday[PopData$Pop_Code==Pop & PopData$Year==year])
     test$Indicator <-FALSE
       ####Set days with positive GDD to true
     test$Indicator <- ifelse(test$GDeg > 0, TRUE, test$Indicator)
@@ -144,15 +152,15 @@ for(year in (2008:2010)){
       
       
       ##Data Values to Put into PopDat (all stations for each pop)
-    PopData$GD[PopData$Pop_Code==Pop] <- GD
-    PopData$GDs[PopData$Pop_Code==Pop] <- GDs
-    PopData$GDD[PopData$Pop_Code==Pop] <- GDD
-    PopData$GDDs[PopData$Pop_Code==Pop] <- GDDs
-    PopData$meanGDeg[PopData$Pop_Code==Pop] <- meanGDeg
-    PopData$varGDeg[PopData$Pop_Code==Pop] <- varGDeg
-    PopData$skewGDeg[PopData$Pop_Code==Pop] <- skewGDeg
-    PopData$kurtGDeg[PopData$Pop_Code==Pop] <- kurtGDeg
-    PopData$numStns[PopData$Pop_Code==Pop] <- ncol(test) - 2 # minus GDeg column and Indicator column
+    PopData$GD[PopData$Pop_Code==Pop & PopData$Year==year] <- GD
+    PopData$GDs[PopData$Pop_Code==Pop & PopData$Year==year] <- GDs
+    PopData$GDD[PopData$Pop_Code==Pop & PopData$Year==year] <- GDD
+    PopData$GDDs[PopData$Pop_Code==Pop & PopData$Year==year] <- GDDs
+    PopData$meanGDeg[PopData$Pop_Code==Pop & PopData$Year==year] <- meanGDeg
+    PopData$varGDeg[PopData$Pop_Code==Pop & PopData$Year==year] <- varGDeg
+    PopData$skewGDeg[PopData$Pop_Code==Pop & PopData$Year==year] <- skewGDeg
+    PopData$kurtGDeg[PopData$Pop_Code==Pop & PopData$Year==year] <- kurtGDeg
+    PopData$numStns[PopData$Pop_Code==Pop & PopData$Year==year] <- ncol(test) - 2 # minus GDeg column and Indicator column
    
     cat("***************\nIteration ",Cntr," of",length(PopData$Pop_Code),"\nYear: ",year,"\nPop: ",Pop,"\n",Sys.time(),"seconds","\nGD: ",PopData$GDD[PopData$Pop_Code==Pop],"\nGDDs: ",PopData$GDDs[PopData$Pop_Code==Pop],"\n***************")
     yday<-LocStns<-PopGDData<-GeoDat<-tps<-NA # clean up for next iteration of pop
