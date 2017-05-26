@@ -122,7 +122,6 @@ for (year in 1866:2015){
     WthrData$Day<-strptime(WthrData$Date,format="%Y-%m-%d")$yday
     ##GDD calculation, (Tmax + Tmin)/2 - Tbase, divided by ten due to the temperature being counted in tenths of a degree
     WthrData$GDeg <- (WthrData$TMAX/10 + WthrData$TMIN/10)/2 - 8
-    WthrData$GDeg <- ifelse(WthrData$GDeg < 0, 0, WthrData$GDeg)
     # Save data frame
     write.csv(WthrData,GDFilePath,row.names=FALSE)
 	print(GDFilepath)
