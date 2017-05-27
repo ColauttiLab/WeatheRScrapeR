@@ -4,7 +4,7 @@
 ## then interpolates GDD for each population
 ## and growing season metrics.
 ############################################
-options(warn=2)
+
 
 ##############################
 ## Load functions
@@ -57,7 +57,7 @@ Cntr<-0
 # For each year: 
 
 
-for(year in (1972:2016)){ 
+for(year in (1967:2016)){ 
   
   # Open file with GD data
   GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
@@ -79,7 +79,7 @@ for(year in (1972:2016)){
     # Make data frame get geographic distance, lat, long for each station, subset to 20 stations if necessary
     
     GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% StnId,c("StationID", "Latitude", "Longitude", "Dist")])
-    
+    GeoDat$Dist<-ifelse(GeoDat$Dist==0, 0.0001, GeoDat$Dist)
     
     if (ncol(test) >20 ) {
       # reduce number of stations to closest 20
@@ -93,7 +93,7 @@ for(year in (1972:2016)){
       test<- test[colSums(!is.na(test)) > 0]
       StnId<-names(test)
       GeoDat<-unique(StnData[StnData$Pop_Code==Pop & StnData$StationID %in% StnId,c("StationID", "Latitude", "Longitude", "Dist")])
-      
+      GeoDat$Dist<-ifelse(GeoDat$Dist==0, 0.0001, GeoDat$Dist)
       }
 
 
@@ -140,6 +140,7 @@ for(year in (1972:2016)){
     GD <- (end - begin) + 1  ##season length, need +1 so start of season is included
     GDs <- yday-begin+1 ##length of season to collection, need +1 so start of season is included
     test[mapply(is.infinite, test)] <- NaN
+    test$GDeg<- ifelse(test$GDeg<0, 0, test$GDeg)
     GDD <- sum(test$GDeg[begin:end], na.rm=T) ## GDD for the entire season
     GDDs <- sum(test$GDeg[begin:yday], na.rm=T) ##GDD from start of season to collection
       
@@ -170,4 +171,6 @@ for(year in (1972:2016)){
   GDData<-GDFilePath<-NA # Clean-up for next iteration of year
 }
 
-
+## manually fixed problems:
+# Pop_Code 366284 : one station USS0011H55S has strange data from day 1 to June 8th. That data was manually removed
+test$USS0011H55S[1:159]<- NA # used right before interpolation
