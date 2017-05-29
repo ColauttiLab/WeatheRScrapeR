@@ -7,8 +7,9 @@
 ## Libraries
 library(ggplot2)
 library(tidyverse)
+library(broom)
 ### Measurement data
-data <-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
+data <-read.csv("HerbariumPopData_GDD_byDay.csv", header=T)
 str(data)
 names(data)
 summary(data)##check if there are NAs for yday and Year or the measurements.
@@ -228,7 +229,7 @@ qplot(GD,fti,data=bindat,alpha=I(0.2))+geom_smooth(method="lm")
 ##Yihan: include warning message about missing values, some bins do not have any specimens in them
 
 bindat$Region <-NULL
-bindat$Region[bindat$Long > -80]<-"EastCost"
+bindat$Region[bindat$Long > -80]<-"EastCoast"
 bindat$Region[bindat$Long <= -80 & bindat$Long > -95]<-"MidWest"
 bindat$Region[bindat$Long <= -95 & bindat$Long > -122]<-"West"
 bindat$Region[bindat$Long <= -122]<-"WestCoast"
