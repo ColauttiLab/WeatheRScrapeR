@@ -1,7 +1,8 @@
 
 ## Libraries
-library(ggplot2)
+library(ggmap)
 library(tidyverse)
+
 ### Measurement data
 data <-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
 ## histogram of collection by year
@@ -93,6 +94,7 @@ Stnmap<-ggplot() +
   geom_point(data=data, aes(x=Longitude, y=Latitude), color="#CC33FF", alpha=0.5) +
   ## set limits on map to only show North American range
   coord_cartesian(ylim=c(32,53), xlim=c(-128,-60)) + 
+  theme_map()+
   ## removes all titles and markings on x and y axis
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(), 
@@ -101,6 +103,11 @@ Stnmap<-ggplot() +
         axis.ticks.x=element_blank(),
         axis.ticks.y=element_blank())
 ggsave(Stnmap, filename ="Stnmap.png" ,width = 10,height=5,dpi = 300)
+
+
+test<-c(-130, 30, -105, 50)
+testmap<- get_map(location=test,source="google", maptype="terrain", crop=FALSE)
+ggmap(testmap)
 
 Regionmap<- ggplot() + 
   ## uses the world map from above
