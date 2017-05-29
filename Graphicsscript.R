@@ -2,9 +2,10 @@
 ## Libraries
 library(ggmap)
 library(tidyverse)
+library(ggthemes)
 
 ### Measurement data
-data <-read.csv("HerbariumPopData_wGDD_IDW.csv", header=T)
+data <-read.csv("HerbariumPopData_GDD_byDay.csv", header=T)
 ## histogram of collection by year
 histogramyear<-ggplot(data, aes(data$Year)) + 
   geom_histogram() + 
@@ -104,10 +105,28 @@ Stnmap<-ggplot() +
         axis.ticks.y=element_blank())
 ggsave(Stnmap, filename ="Stnmap.png" ,width = 10,height=5,dpi = 300)
 
+load("testmap.RData")
+#test<-c(left=-128, bottom= 30, right = -60, top= 65)
+#testmap<- get_map(location=test, source="stamen", maptype="watercolor", zoom = 6, crop=FALSE)
+#save(testmap, file= "testmap6.RData")
+#ggmap(testmap)
 
-test<-c(-130, 30, -105, 50)
-testmap<- get_map(location=test,source="google", maptype="terrain", crop=FALSE)
-ggmap(testmap)
+#googlemap<-get_map(location=test,source="google", maptype="terrain", zoom=14)
+
+Stnmap<- ggmap(testmap) +
+  geom_point(data= UniqueStns, aes(x=Longitude, y=Latitude), color="gray50", alpha=0.3, size=2) +
+  geom_point(data=data, aes(x=Longitude, y=Latitude), color="#CC33FF", alpha=0.5, size=3) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(), 
+        axis.text.y = element_blank(),
+        axis.title.y = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_blank())
+  
+ggsave(Stnmap, filename = "StamenStationmap.svg", width=61, height=41.4, units="cm")
+
+
+
 
 Regionmap<- ggplot() + 
   ## uses the world map from above
