@@ -57,7 +57,7 @@ Cntr<-0
 # For each year: 
 
 
-for(year in (1967:2016)){ 
+for(year in (1866:2016)){ 
   
   # Open file with GD data
   GDFilePath<-paste0("WeatherRawData/NOAAStnsClose",year,".csv") 
@@ -66,6 +66,8 @@ for(year in (1967:2016)){
     Cntr<-Cntr+1
     # Find names of nearby stations
     LocStns<-paste(unique(StnData$StationID[StnData$Pop_Code==Pop & StnData$Measure=="TMAX"]))
+    if (length(LocStns) == 0) { 
+      next }
     # Subset GDData for stations of interest from Jan 1 to day of sampling
     # find all stations in station list, and cross with all stations in the year data
     PopGDData<-GDData[GDData$StationID %in% LocStns,]
@@ -74,6 +76,8 @@ for(year in (1967:2016)){
     ## make days the row names
     test %>% remove_rownames %>% column_to_rownames(var="Date") -> test
     test<- test[colSums(!is.na(test)) > 0]
+    if (nrow(test) < 300) { next 
+      }
     StnId<-names(test)
     # find all stations from station list based on population code, and only the stations that exist in yearly data set
     # Make data frame get geographic distance, lat, long for each station, subset to 20 stations if necessary
