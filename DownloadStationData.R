@@ -93,7 +93,7 @@ print("Station Search Complete")
 ##############################
 # Download weather data from NOAA (ftp server has all locations for each year)
 # Use FTP site to download data since we have >1,000 stations * years
-for (year in 1866:2015){
+for (year in 1866:2016){
   WthrData<-{} # Reset 'stations' data in each iteration
   FilePath<-paste0("WeatherRawData/NOAA_GHCN",year,".csv.gz")
   if(!file.exists(FilePath)){  # Skip if file already downloaded
@@ -122,10 +122,8 @@ for (year in 1866:2015){
     WthrData$Day<-strptime(WthrData$Date,format="%Y-%m-%d")$yday
     ##GDD calculation, (Tmax + Tmin)/2 - Tbase, divided by ten due to the temperature being counted in tenths of a degree
     WthrData$GDeg <- (WthrData$TMAX/10 + WthrData$TMIN/10)/2 - 8
-    WthrData$GDeg <- ifelse(WthrData$GDeg < 0, 0, WthrData$GDeg)
     # Save data frame
     write.csv(WthrData,GDFilePath,row.names=FALSE)
-	print(GDFilepath)
   }
 }
 
