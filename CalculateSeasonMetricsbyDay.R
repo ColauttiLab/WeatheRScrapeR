@@ -176,5 +176,5 @@ for(year in (1866:2016)){
 }
 
 ## manually fixed problems:
-# Pop_Code 366284 : one station USS0011H55S has strange data from day 1 to June 8th. That data was manually removed
-test$USS0011H55S[1:159]<- NA # used right before interpolation
+# Pop_Code 366284 : two stations with error data, removed from interpolation
+
