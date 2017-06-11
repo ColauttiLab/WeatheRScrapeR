@@ -17,12 +17,13 @@ summary(data)##check if there are NAs for yday and Year or the measurements.
 ## convert data frame factors to character
 
 data %>% mutate_if(is.factor, as.character) -> data
-#data$Pop_Code<-as.character(data$Pop_Code)
+
 
 ## exclude 'populations' (i.e. sample locations) that are missing climate data
 data<-subset(data,!(is.na(data["GD"])))
 # calculate actual lengths in cm
 # length of flower portion of inflorescence (converting pixels to cm)
+
 data$flower.cm<-data$actual/data$standard*data$flower.inf.length
 # length of bud portion of inflorescence
 data$bud.cm<-data$actual/data$standard*data$bud.inf.Length
