@@ -8,10 +8,10 @@ library(tidyverse)
 
 
 ##Data import
-GreenhouseData<-read.csv("MontagueGreenhousePopulations_wGDD__IDW2.csv", header=T, stringsAsFactors = F)
-#FieldData<-read.csv("MontagueFieldPopulations_wGDD__IDW2.csv", header=T, stringsAsFactors = F)
+GreenhouseData<-read.csv("MontagueGreenhousePopulations_GDD_byDay.csv", header=T, stringsAsFactors = F)
+#FieldData<-read.csv("MontagueFieldPopulations_GDD_byDay.csv", header=T, stringsAsFactors = F)
 
-CommonGarden<-read.csv("CBCommonGardenPopulations_wGDD__IDW2.csv", stringsAsFactors = F)
+CommonGarden<-read.csv("CBCommonGarden_GDD_byDay.csv", stringsAsFactors = F)
 names(CommonGarden)[1]<-"Individualnumber"
 
 PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
@@ -70,7 +70,7 @@ HerbData$Source<-"Herbarium"
 names(CommonGarden)[15]<-"Latitude"
 names(CommonGarden)[16]<-"Source"
 ##bind all three data frames
-AllData<-rbind(GreenhouseData, CommonGarden, HerbData)
+AllData<-rbind(GreenhouseData, FieldData, CommonGarden, HerbData)
 
 
 
