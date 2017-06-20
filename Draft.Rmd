@@ -119,8 +119,9 @@ Four geographic regions:
 
 Two time eras:  
 
-* Early: Collected before 1960.  
-* Recent: Colleted in 1960 or after.   
+* Early: Collected before 1920.
+* Middle: Collected between 1921 and 1969
+* Recent: Colleted in 1970 or after.   
 
 
 ```{r categorizing specimens by time and location}
@@ -142,6 +143,12 @@ PhenolAllData$Era<-as.factor(PhenolAllData$Era)
 tabletande<-table(PhenolAllData$Era, PhenolAllData$Region)
 kable(tabletande, caption="Table 1. Number of specimens in each region and era.")
 
+```
+
+
+```{r collection frequency plot, fig.cap="Histogram of specimens collected categorized by region."}
+ggplot(PhenolAllData, aes(Year, fill=Region))+ 
+  geom_histogram()
 ```
 
 ## Correlations between growing season and collection day
@@ -174,6 +181,7 @@ The flowering time index (fti) adjusts the phenology index for the local climate
 
 ```{r fti, echo=TRUE}
 PhenolAllData$fti <- (PhenolAllData$phind) + (PhenolAllData$GDDs-mean(PhenolAllData$GDDs,na.rm=TRUE))/sd(PhenolAllData$GDDs,na.rm=TRUE)
+write.csv(PhenolAllData, "PhenolAllData.csv", row.names=F)
 
 ```
 
@@ -217,12 +225,71 @@ summary(lm(fti~GD*Region*Era, data=PhenolAllData))
 ```
 When FTI is plotted against the length of the growing season, specimens from locations with longer growing seasons flower later in their growing season compared to specimens from locations with relatively shorter growing seasons. Additionally, the flowering cline has growen stronger over time, with specimens at locations with longer growing seasons now flowering even later in the growing seasons in the Midwest region.
 
-```{r}
+#Validation
+
+```{r Validation data}
+GreenhouseData<-read.csv("MontagueGreenhousePopulations_GDD_byDay.csv", header=T, stringsAsFactors = F)
+
+CommonGarden<-read.csv("CBCommonGarden_GDD_byDay.csv", stringsAsFactors = F)
+names(CommonGarden)[1]<-"Individualnumber"
+
+PhenolAllData<-read.csv("PhenolAllData.csv", header=T, stringsAsFactors=FALSE)
+
+
+## create find and fti for Greenhouse and Field data
+
+GreenhouseData$fti<-(GreenhouseData$yday-mean(GreenhouseData$yday, na.rm=TRUE))/sd(GreenhouseData$yday, na.rm=TRUE)
+
+CommonGarden %>% separate(Plant_ID, c("Sitenumber", "Site1", "Mat", "Row", "Position"), sep="_" ) -> CommonGarden
+
+CommonGarden$Pop<-CommonGarden$Mat # Extract population code from maternal family code
+CommonGarden$Pop<-gsub("[0-9]","",CommonGarden$Pop)
+## attach origins to common garden data
+AllData<-read.table("AllDataFixed.txt", header=T, sep=",")
+AllData<-AllData[,c("Pop_Code", "Pop", "Lat")]
+names(AllData)<-c("Pop", "Pop_Code", "Lat")
+AllData<-unique(AllData)
+AllData %>% mutate_if(is.factor, as.character) -> AllData
+CommonGarden<-left_join(CommonGarden, AllData)
+
+CommonGarden$find<-(CommonGarden$GDs-mean(CommonGarden$GDs, na.rm=TRUE))/sd(CommonGarden$GDs, na.rm=TRUE)
+CommonGarden$fti<- (CommonGarden$find) + (CommonGarden$GDDs-mean(CommonGarden$GDDs,na.rm=TRUE))/sd(CommonGarden$GDDs,na.rm=TRUE)
+
+
+
+##Subset data frames
+GreenhouseData<-GreenhouseData[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
+CommonGarden<- CommonGarden[,c("Pop_Code","Longitude","yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti", "Lat", "Site1")]
+
+##change years here, will see different slopes for herbarium. Herbarium slope flattens out in more recent years, ie 1990, 2000
+PhenolAllData<-subset(PhenolAllData, Year >=1960)
+ValidHerb<-PhenolAllData[(PhenolAllData$Latitude < 49) & (PhenolAllData$Longitude > -85), ]
+ValidHerb<-ValidHerb[(ValidHerb$Latitude > 38) & (ValidHerb$Longitude < -74), ]
+HerbData<-ValidHerb[,c("Pop_Code", "Latitude", "Longitude", "yday", "Year", "GD", "GDs", "GDD", "GDDs", "meanGDeg","varGDeg", "skewGDeg","kurtGDeg", "numStns", "fti")]
+
+##Attach data source as columns to all data frames
+
+GreenhouseData$Source<-"Greenhouse"
+#FieldData$Source<-"Field"
+HerbData$Source<-"Herbarium"
+#CommonGarden$Source<-"CommonGarden"
+names(CommonGarden)[15]<-"Latitude"
+names(CommonGarden)[16]<-"Source"
+##bind all three data frames
+AllData<-rbind(GreenhouseData, CommonGarden, HerbData)
+
+
+
 
 ```
 
+```{r Validation plot}
+ggplot(AllData, aes(x=Latitude, y=fti, color=Source))+
+  geom_point(alpha=0.2)+geom_smooth(method="lm")
 
+```
 
+## sandbox
 ```{r scratch}
 mod1<-lm(fti~GD+Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
 mod2<-lm(fti~GD*Era, data=PhenolAllData[PhenolAllData$Region=="EastCoast",])
@@ -244,5 +311,7 @@ ggplot(PhenolAllData, aes(x=GD, y=fti, color=Region)) +
   theme(plot.background = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank()) +
   theme(axis.line = element_line(color = 'black'), legend.position = "none") +
   geom_smooth(method="lm", size=2)
+
+
 ```
 
